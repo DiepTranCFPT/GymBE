@@ -50,7 +50,7 @@ public class TokenService {
                 .subject(user.getEmail())
                 .issueTime(new Date(System.currentTimeMillis()))
                 .expirationTime(new Date(System.currentTimeMillis()+24*60*60*1000))
-                .claim("scope", "ROLE_" + user)
+                .claim("scope", "ROLE_" + user.getRole().name())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());

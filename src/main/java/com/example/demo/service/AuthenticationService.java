@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -41,6 +42,15 @@ public class AuthenticationService {
 
     @Transactional
     public User register(RegisterRequest registerRequest) {
+        User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
+        User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
+
+        if (existingUserByEmail != null) {
+            throw new AuthException("Email already in use.");
+        }
+        if (existingUserByPhone != null) {
+            throw new AuthException("Phone number already in use.");
+        }
         User user = new User();
         user.setName(registerRequest.getName());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -62,6 +72,15 @@ public class AuthenticationService {
         return user;
     }
     public User registerStaff(RegisterRequest registerRequest) {
+        User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
+        User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
+
+        if (existingUserByEmail != null) {
+            throw new AuthException("Email already in use.");
+        }
+        if (existingUserByPhone != null) {
+            throw new AuthException("Phone number already in use.");
+        }
         User user = new User();
         user.setName(registerRequest.getName());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -83,8 +102,19 @@ public class AuthenticationService {
 
         return user;
     }
-    @PreAuthorize("hasAuthority('ADMIN')")
+
     public User registerPT(RegisterRequest registerRequest) {
+        // Check if the email or phone already exists in the database
+        User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
+        User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
+
+        if (existingUserByEmail != null) {
+            throw new AuthException("Email already in use.");
+        }
+        if (existingUserByPhone != null) {
+            throw new AuthException("Phone number already in use.");
+        }
+
         User user = new User();
         user.setName(registerRequest.getName());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
@@ -96,20 +126,20 @@ public class AuthenticationService {
         user.setCreateTime(LocalDateTime.now());
         user.setVerificationCode(UUID.randomUUID().toString());
 
+        // Save the new user to the repository
         authenticationRepository.save(user);
 
-        try {
-            user = authenticationRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new AuthException("Duplicate");
-        }
         return user;
     }
+
 
 
     public AccountResponse login(LoginRequest loginRequest) {
         var account = authenticationRepository.findByEmail(loginRequest.getEmail());
 
+        if (account.getRole().equals("USER")) {
+            throw new AuthException("Account not access denied ");
+        }
         if (account == null) {
             throw new AuthException("Account not found with email: " + loginRequest.getEmail());
         }
