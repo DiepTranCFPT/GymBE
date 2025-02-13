@@ -40,7 +40,7 @@ public class AuthenticationAPI {
                     .body("Error creating staff user: " + e.getMessage());
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register_PT")
     public ResponseEntity<String> registerPT(@RequestBody RegisterRequest registerRequest) {
         try {
@@ -54,7 +54,6 @@ public class AuthenticationAPI {
     }
 
     // Login functionality - accessible by any user
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
