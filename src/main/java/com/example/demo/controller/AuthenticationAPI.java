@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
 @RequestMapping("admin")
+
 public class AuthenticationAPI {
 
     @Autowired

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ public class Filter extends OncePerRequestFilter {
     private List<String> PUBLIC_ENDPOINTS;
 
     private List<String> PUBLIC_ENDPOINTS_METHOD;
+
 
 
     public Filter(String[] PUBLIC_ENDPOINTS, String[] PUBLIC_ENDPOINTS_METHOD) {
@@ -38,13 +40,12 @@ public class Filter extends OncePerRequestFilter {
         boolean checkis = isPublicEndpointMethod && "GET".equals(method);
 
         if (isPublicEndpoint || checkis) {
-            HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
+            jakarta.servlet.http.HttpServletRequestWrapper requestWrapper = new HttpServletRequestWrapper(request) {
                 @Override
                 public String getHeader(String name) {
                     if ("Authorization".equalsIgnoreCase(name)) {
                         return "";
                     }
-
                     return super.getHeader(name);
                 }
             };

@@ -7,7 +7,6 @@ import com.example.demo.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Role;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,43 +21,44 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+
 import javax.crypto.spec.SecretKeySpec;
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfig   {
+public class SecurityConfig  {
 
     private final String SECRET_KEY = "HT4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c";
     private final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/api/admin/register",
-            "/api/create_Admin",
             "/admin/login"
-
     };
 
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/admin/login"
+            "/admin/login",
+            "/admin/register_PT"
     };
 
     @Autowired
     AuthenticationHandler authenticationHandler;
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(new CustomRequestMatcher(PUBLIC_ENDPOINTS_METHOD)).hasRole(UserRole.ADMIN.name())
+                        .requestMatchers(new CustomRequestMatcher(PUBLIC_ENDPOINTS_METHOD)).hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -95,5 +95,4 @@ public class SecurityConfig   {
 
 
 }
-
 
