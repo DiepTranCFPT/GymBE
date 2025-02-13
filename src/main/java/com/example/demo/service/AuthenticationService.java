@@ -83,7 +83,7 @@ public class AuthenticationService {
 
         return user;
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public User registerPT(RegisterRequest registerRequest) {
         User user = new User();
         user.setName(registerRequest.getName());
