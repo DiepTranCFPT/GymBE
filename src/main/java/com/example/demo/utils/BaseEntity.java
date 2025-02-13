@@ -14,6 +14,4 @@ public class BaseEntity {
     public LocalDateTime lastUpdatedTime;
     public LocalDateTime deletedTime;
     public LocalDateTime createTime;
-
-
 }
