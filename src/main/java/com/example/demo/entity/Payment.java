@@ -2,27 +2,23 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 
 @Entity
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private LocalDateTime timeUpdatedLast;
-
-    private Boolean deleted;
-
-    private LocalDateTime timeCreated;
+    @OneToOne
+    @JoinColumn(name = "subscription_id")
+    private Subscriptions subscriptions;
 
     private double amount;
 
-    private String billId;
+    private String paymentMethod;
 
-    @ManyToOne
-    @JoinColumn(name = "bill_idP", referencedColumnName = "id", insertable = false, updatable = false)
-    private Bill bill;
+    private Boolean status;
 
-    // Getter and Setter methods
+    private String createAt;
 }
