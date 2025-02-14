@@ -137,10 +137,10 @@ public class AuthenticationService {
     public AccountResponse login(LoginRequest loginRequest) {
         var account = authenticationRepository.findByEmail(loginRequest.getEmail());
 
-        if (account.getRole().equals("USER")) {
+        if (account.getRole().name().equals("USER")) {
             throw new AuthException("Account not access denied ");
         }
-        if (account == null) {
+        if (account.getEmail() == null) {
             throw new AuthException("Account not found with email: " + loginRequest.getEmail());
         }
         if (!passwordEncoder.matches(loginRequest.getPassword(), account.getPassword())) {
