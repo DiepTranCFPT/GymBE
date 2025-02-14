@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+
 
 
 @Entity
@@ -40,9 +40,5 @@ public class User extends BaseEntity  {
    private boolean enable;
 
    private String verificationCode;
-
-   @OneToMany
-   @JoinColumn(name = "calendar_idU", referencedColumnName = "id", insertable = false, updatable = false)
-   private List<Calendar> calendar;
 
 }

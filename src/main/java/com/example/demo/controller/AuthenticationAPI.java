@@ -28,7 +28,7 @@ public class AuthenticationAPI {
 //        return ResponseEntity.ok("Success");
 //    }
     // Register a Staff user - Only accessible to Admin
-
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register_Staff")
     public ResponseEntity<String> registerStaff(@RequestBody RegisterRequest registerRequest) {
         try {
