@@ -6,7 +6,9 @@ import com.example.demo.entity.User;
 import com.example.demo.model.Request.*;
 import com.example.demo.model.Response.AccountResponse;
 import com.example.demo.service.AuthenticationService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "api")
 @CrossOrigin("*")
 @RequestMapping("admin")
-
+@Tag(name = "User Controller", description = "Quản lý các hoạt động người dùng như tạo mới, cập nhật, xóa, xác minh, v.v.")
 public class AuthenticationAPI {
 
     @Autowired
@@ -42,6 +44,8 @@ public class AuthenticationAPI {
                     .body("Error creating staff user: " + e.getMessage());
         }
     }
+    @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register_PT")
     public ResponseEntity<String> registerPT(@RequestBody RegisterRequestPT registerRequest) {

@@ -1,6 +1,8 @@
 package com.example.demo.config;
 
-
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import com.example.demo.enums.UserRole;
 import com.example.demo.exception.AuthenticationHandler;
 import com.example.demo.filter.Filter;
@@ -22,21 +24,16 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
 import javax.crypto.spec.SecretKeySpec;
-
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-//@EnableMethodSecurity
-public class SecurityConfig  {
-
+@EnableMethodSecurity
+public class SecurityConfig {
     private final String SECRET_KEY = "HT4bb6d1dfbafb64a681139d1586b6f1160d18159afd57c8c79136d7490630407c";
     private final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",
-            "/v3/api-docs/**",
-            "/swagger-resources/**",
+            "/api-docs/**",
             "/admin/login",
             "/admin/register",
             "/"
@@ -96,7 +93,4 @@ public class SecurityConfig  {
         return new BCryptPasswordEncoder(10);
     }
 
-
-
 }
-
