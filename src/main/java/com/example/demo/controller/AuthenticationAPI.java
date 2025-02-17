@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationAPI {
 
     @Autowired
-    IAuthentication authenticationService;
+    AuthenticationService authenticationService;
 
 //    //role -- ADMIN
 //    @PostMapping("/register")

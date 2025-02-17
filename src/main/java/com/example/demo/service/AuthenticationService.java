@@ -25,7 +25,7 @@ import java.util.UUID;
 
 
 @Service
-public class AuthenticationService implements IAuthentication {
+public class AuthenticationService  {
 
     @Autowired
     private AuthenticationRepository authenticationRepository;
@@ -40,7 +40,7 @@ public class AuthenticationService implements IAuthentication {
     AccountUtils accountUtils;
 
     @Transactional
-    public User register(@NotNull RegisterRequest registerRequest) {
+    public User register( RegisterRequest registerRequest) {
         User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
         User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
 
@@ -67,7 +67,7 @@ public class AuthenticationService implements IAuthentication {
         }
         return user;
     }
-    public User registerStaff(@NotNull RegisterRequest registerRequest) {
+    public User registerStaff( RegisterRequest registerRequest) {
         User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
         if (existingUser == null) {
             existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
@@ -95,7 +95,7 @@ public class AuthenticationService implements IAuthentication {
 
     }
 
-    public Trainer registerPT(@NotNull RegisterRequestPT registerRequest) {
+    public Trainer registerPT( RegisterRequestPT registerRequest) {
         User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
         if (existingUser == null) {
             existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
@@ -144,7 +144,7 @@ public class AuthenticationService implements IAuthentication {
 
 
 
-    public AccountResponse login(@NotNull LoginRequest loginRequest) {
+    public AccountResponse login( LoginRequest loginRequest) {
         var account = authenticationRepository.findByEmail(loginRequest.getEmail());
 
         if (account.getRole().name().equals("USER")) {
