@@ -38,14 +38,16 @@ public class SecurityConfig  {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/admin/login",
-            "/admin/register"
+            "/admin/register",
+            "/"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/admin/login",
-            "/admin/register_PT"
+            "/admin/register_PT",
+            "/"
     };
 
     @Autowired
