@@ -10,6 +10,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class Filter extends OncePerRequestFilter {
                     if ("Authorization".equalsIgnoreCase(name)) {
                         return "";
                     }
+
                     return super.getHeader(name);
                 }
             };
