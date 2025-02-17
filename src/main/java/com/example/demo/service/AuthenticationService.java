@@ -1,35 +1,31 @@
 package com.example.demo.service;
 
+import com.example.demo.IService.IAuthentication;
+import com.example.demo.entity.Trainer;
 import com.example.demo.entity.User;
 
 import com.example.demo.enums.UserRole;
 import com.example.demo.exception.AuthException;
-import com.example.demo.exception.BadRequestException;
-import com.example.demo.exception.GlobalException;
-
-import com.example.demo.model.EmailDetail;
 import com.example.demo.model.Request.*;
 import com.example.demo.model.Response.AccountResponse;
 import com.example.demo.repository.AuthenticationRepository;
+import com.example.demo.repository.TrainerRepository;
 import com.example.demo.utils.AccountUtils;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PreAuthorize;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
+
 
 @Service
-public class AuthenticationService {
+public class AuthenticationService implements IAuthentication {
 
     @Autowired
     private AuthenticationRepository authenticationRepository;
@@ -37,11 +33,14 @@ public class AuthenticationService {
     private TokenService tokenService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private TrainerRepository trainerRepository;
     @Autowired
     AccountUtils accountUtils;
 
     @Transactional
-    public User register(RegisterRequest registerRequest) {
+    public User register(@NotNull RegisterRequest registerRequest) {
         User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
         User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
 
@@ -59,7 +58,6 @@ public class AuthenticationService {
         user.setRole(UserRole.ADMIN);
         user.setEnable(true);
         user.setVerificationCode(UUID.randomUUID().toString());
-
         authenticationRepository.save(user);
 
         try {
@@ -67,74 +65,86 @@ public class AuthenticationService {
         } catch (DataIntegrityViolationException e) {
             throw new AuthException("Duplicate");
         }
-
-
         return user;
     }
-    public User registerStaff(RegisterRequest registerRequest) {
-        User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
-        User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
-
-        if (existingUserByEmail != null) {
-            throw new AuthException("Email already in use.");
+    public User registerStaff(@NotNull RegisterRequest registerRequest) {
+        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
+        if (existingUser == null) {
+            existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
         }
-        if (existingUserByPhone != null) {
-            throw new AuthException("Phone number already in use.");
+        if(existingUser!=null){
+            existingUser.setLastUpdatedTime(LocalDateTime.now());
+            existingUser.setRole(UserRole.STAFF);
+            return existingUser;
         }
-        User user = new User();
-        user.setName(registerRequest.getName());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setPhone(registerRequest.getPhone());
-        user.setEmail(registerRequest.getEmail());
-        user.setRole(UserRole.STAFF);
-        user.setEnable(true);
-        user.setCreateBy("ADMIN");
-        user.setCreateTime(LocalDateTime.now());
-        user.setVerificationCode(UUID.randomUUID().toString());
+        else {
+            User user = new User();
+            user.setName(registerRequest.getName());
+            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            user.setPhone(registerRequest.getPhone());
+            user.setEmail(registerRequest.getEmail());
+            user.setRole(UserRole.STAFF);
+            user.setEnable(true);
+            user.setCreateBy("ADMIN");
+            user.setCreateTime(LocalDateTime.now());
+            user.setVerificationCode(UUID.randomUUID().toString());
+            authenticationRepository.save(user);
+            return user;
 
-        authenticationRepository.save(user);
-
-        try {
-            user = authenticationRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new AuthException("Duplicate");
         }
 
-        return user;
     }
 
-    public User registerPT(RegisterRequest registerRequest) {
-        // Check if the email or phone already exists in the database
-        User existingUserByEmail = authenticationRepository.findByEmail(registerRequest.getEmail());
-        User existingUserByPhone = authenticationRepository.findByPhone(registerRequest.getPhone());
-
-        if (existingUserByEmail != null) {
-            throw new AuthException("Email already in use.");
-        }
-        if (existingUserByPhone != null) {
-            throw new AuthException("Phone number already in use.");
+    public Trainer registerPT(@NotNull RegisterRequestPT registerRequest) {
+        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
+        if (existingUser == null) {
+            existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
         }
 
-        User user = new User();
-        user.setName(registerRequest.getName());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setPhone(registerRequest.getPhone());
-        user.setEmail(registerRequest.getEmail());
-        user.setRole(UserRole.PT);
-        user.setEnable(true);
-        user.setCreateBy("ADMIN");
-        user.setCreateTime(LocalDateTime.now());
-        user.setVerificationCode(UUID.randomUUID().toString());
+        if (existingUser != null) {
+            existingUser.setName(registerRequest.getName());
+            existingUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            existingUser.setRole(UserRole.PT);
+            existingUser.setCreateBy("ADMIN");
+            existingUser.setLastUpdatedTime(LocalDateTime.now());
+            authenticationRepository.save(existingUser);
+            Trainer trainer = new Trainer();
 
-        // Save the new user to the repository
-        authenticationRepository.save(user);
+            trainer.setUser(existingUser);
+            trainer.setExperience_year(registerRequest.getExperienceYear());
+            trainer.setAvailability(true);
+            trainer.setSpecialization(registerRequest.getSpeciliation());
+            trainerRepository.save(trainer);
 
-        return user;
+            return trainer;
+        } else {
+            User newUser = new User();
+            newUser.setName(registerRequest.getName());
+            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            newUser.setPhone(registerRequest.getPhone());
+            newUser.setEmail(registerRequest.getEmail());
+            newUser.setRole(UserRole.PT);
+            newUser.setEnable(true);
+            newUser.setCreateBy("ADMIN");
+            newUser.setCreateTime(LocalDateTime.now());
+            newUser.setVerificationCode(UUID.randomUUID().toString());
+            authenticationRepository.save(newUser);
+
+            Trainer trainer = new Trainer();
+            trainer.setUser(existingUser);
+            trainer.setExperience_year(registerRequest.getExperienceYear());
+            trainer.setAvailability(true);
+            trainer.setSpecialization(registerRequest.getSpeciliation());
+            trainerRepository.save(trainer);
+
+            return trainer;
+        }
     }
 
 
 
-    public AccountResponse login(LoginRequest loginRequest) {
+
+    public AccountResponse login(@NotNull LoginRequest loginRequest) {
         var account = authenticationRepository.findByEmail(loginRequest.getEmail());
 
         if (account.getRole().name().equals("USER")) {
@@ -156,7 +166,6 @@ public class AuthenticationService {
         accountResponse.setToken(token);
         accountResponse.setName(account.getName());
         accountResponse.setPhone(account.getPhone());
-
         return accountResponse;
     }
 
