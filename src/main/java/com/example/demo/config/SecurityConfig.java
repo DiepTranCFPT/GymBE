@@ -37,9 +37,9 @@ public class SecurityConfig  {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-resources/**",
-            "/admin/login"
+            "/admin/login",
+            "/admin/register"
     };
-
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
             "/v3/api-docs/**",
