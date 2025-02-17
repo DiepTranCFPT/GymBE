@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.IService.IAuthentication;
+import com.example.demo.entity.Trainer;
 import com.example.demo.entity.User;
 import com.example.demo.model.Request.*;
 import com.example.demo.model.Response.AccountResponse;
@@ -19,9 +21,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationAPI {
 
     @Autowired
-    AuthenticationService authenticationService;
+    IAuthentication authenticationService;
 
-    //role -- ADMIN
+//    //role -- ADMIN
 //    @PostMapping("/register")
 //    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
 //        User user = authenticationService.register(registerRequest);
@@ -42,9 +44,9 @@ public class AuthenticationAPI {
     }
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register_PT")
-    public ResponseEntity<String> registerPT(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<String> registerPT(@RequestBody RegisterRequestPT registerRequest) {
         try {
-            User user = authenticationService.registerPT(registerRequest);
+            Trainer user = authenticationService.registerPT(registerRequest);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body("PT user created successfully with ID: " + user.getId());
         } catch (Exception e) {
@@ -52,8 +54,6 @@ public class AuthenticationAPI {
                     .body("Error creating PT user: " + e.getMessage());
         }
     }
-
-    // Login functionality - accessible by any user
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
