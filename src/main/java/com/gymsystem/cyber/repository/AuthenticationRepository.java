@@ -16,7 +16,9 @@ public interface AuthenticationRepository extends JpaRepository<User, Long> {   
     Optional<User> findByEmailAndAndDeletedIsFalse(String eString);
 
 
-    boolean existsByEmailOrPhone(String email, String phone);
+//    boolean existsByEmailOrPhone(String email, String phone);
+
+    boolean existsByEmail(String email);
 
     Optional<User> findByEmail(String email);
 
