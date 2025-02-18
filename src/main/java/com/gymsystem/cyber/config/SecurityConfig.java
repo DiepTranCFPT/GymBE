@@ -47,7 +47,7 @@ public class SecurityConfig {
             "/api-docs/**",
             "/admin/login",
             "/admin/register",
-            "/api/authen/oath-login/**",
+            "/api/authen/login/**",
             "/api/test/public-api",
             "/"
     };
@@ -56,7 +56,8 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/admin/register_PT",
-            "/api/test/admin-api/**"
+            "/api/test/admin-api/**",
+            "/api/authen/register/**"
     };
 
     final AuthenticationHandler authenticationHandler;

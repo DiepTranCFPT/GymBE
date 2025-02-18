@@ -32,7 +32,7 @@ public class AuthenticationController {
     @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register")
-    public CompletableFuture<ResponseObject> registerPT(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
+    public CompletableFuture<ResponseObject> register(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
         return authenticationService.register(registerRequest);
     }
 
