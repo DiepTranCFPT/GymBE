@@ -15,7 +15,7 @@ public class RegisterRequest {
     @NotNull
     String password;
 
-    String phone;
+//    String phone;
 
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
