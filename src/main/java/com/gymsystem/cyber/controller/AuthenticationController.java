@@ -31,12 +31,13 @@ public class AuthenticationController {
 
     @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/oath-regist")
+    @PostMapping("/register")
     public CompletableFuture<ResponseObject> registerPT(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
         return authenticationService.register(registerRequest);
     }
 
-    @PostMapping("/oath-login")
+    @PostMapping("/login")
+    @Operation(summary = "đang nhap (moi quyen)")
     public CompletableFuture<ResponseObject> loginAccount(@RequestBody LoginRequest loginRequest) {
         return authenticationService.login(loginRequest);
     }
