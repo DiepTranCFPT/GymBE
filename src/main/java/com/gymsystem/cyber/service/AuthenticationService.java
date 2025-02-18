@@ -101,18 +101,10 @@ public class AuthenticationService implements IAuthentication {
     @Async
     public CompletableFuture<ResponseObject> register(RegisterRequest registerRequest) throws AccountNotFoundException {
 
-        // ktr xem 1 trong 2 null -> true
-        // 2 null -> false
-        // 2 !null -> true
-
-        if ((registerRequest.getPhone() == null) ^ (registerRequest.getEmail() == null)) {
-            throw new AccountNotFoundException("Email or phone number is required!");
-        }
-
-        boolean check = authenticationRepository.existsByEmailOrPhone(registerRequest.getEmail(), registerRequest.getPhone());
-
+        boolean check = authenticationRepository.existsByEmail(registerRequest.getEmail());
+        System.out.println(check);
         if (check) {
-            throw new AccountNotFoundException("email or phone exists!");
+            throw new AccountNotFoundException("email exists!");
         }
 
         return CompletableFuture.supplyAsync(() -> {
@@ -120,7 +112,7 @@ public class AuthenticationService implements IAuthentication {
                     .name(registerRequest.getName())
                     .email(registerRequest.getEmail() == null ? "" : registerRequest.getEmail())
                     .role(UserRole.USER)
-                    .phone(registerRequest.getPhone() == null ? "" : registerRequest.getPhone())
+//                    .phone(registerRequest.getPhone() == null ? "" : registerRequest.getPhone())
                     .enable(true)
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
                     .build();
