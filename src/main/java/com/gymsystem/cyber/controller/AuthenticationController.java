@@ -15,7 +15,7 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@SecurityRequirement(name = "api")
+@SecurityRequirement(name = "bearerAuth")
 @CrossOrigin("*")
 @RequestMapping("api/authen")
 @Tag(name = "User Controller", description = "Quản lý các hoạt động người dùng như tạo mới, cập nhật, xóa, xác minh, v.v.")
@@ -30,9 +30,9 @@ public class AuthenticationController {
 
 
     @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/register")
-    public CompletableFuture<ResponseObject> register(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
+    public CompletableFuture<ResponseObject> regisAcount(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
         return authenticationService.register(registerRequest);
     }
 
