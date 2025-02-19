@@ -12,7 +12,6 @@ import com.example.demo.repository.AuthenticationRepository;
 import com.example.demo.repository.TrainerRepository;
 import com.example.demo.utils.AccountUtils;
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 
