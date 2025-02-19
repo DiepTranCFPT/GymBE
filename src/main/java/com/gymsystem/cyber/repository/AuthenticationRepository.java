@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface AuthenticationRepository extends JpaRepository<User, Long> {   // dua ra daatabase
+public interface AuthenticationRepository extends JpaRepository<User, String> {   // dua ra daatabase
     User findByEmailAndRole(String email, String role);
 
 //    User findByEmail(String email);

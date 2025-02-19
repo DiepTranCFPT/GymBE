@@ -52,6 +52,8 @@ public class SecurityConfig {
             "/api/test/public-api",
             "/api/authen/test/login",
             "/api/authen/profile",
+            "/api/trainers/**",
+
             "/"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
@@ -92,15 +94,15 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationHandler).accessDeniedHandler((request, response, accessDeniedException) -> {
                             authenticationHandler.handleAccessDeniedException(request, response);
                         }))
-                .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/", "/api/authen/test/login").permitAll();
-                    registry.anyRequest().authenticated();
-                })
-                .oauth2Login(oauth2login -> {
-                    oauth2login
-                            .loginPage("/api/authen/test/login")
-                            .successHandler((request, response, authentication) -> response.sendRedirect("/api/authen/profile"));
-                })
+//                .authorizeHttpRequests(registry -> {
+//                    registry.requestMatchers("/", "/api/authen/test/login").permitAll();
+//                    registry.anyRequest().authenticated();
+//                })
+//                .oauth2Login(oauth2login -> {
+//                    oauth2login
+//                            .loginPage("/api/authen/test/login")
+//                            .successHandler((request, response, authentication) -> response.sendRedirect("/api/authen/profile"));
+//                })
                 .userDetailsService(userService)
                 .csrf(AbstractHttpConfigurer::disable);
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(tokenService, jwtDecoder(), userService),
