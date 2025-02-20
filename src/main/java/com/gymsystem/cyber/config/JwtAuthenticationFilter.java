@@ -17,6 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import java.time.Instant;
+import java.util.List;
+
+
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
@@ -41,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 Jwt jwt = jwtDecoder.decode(token);
+
                 String email = jwt.getClaim("email");
 
                 UserDetails userDetails = userService.loadUserByUsername(email);

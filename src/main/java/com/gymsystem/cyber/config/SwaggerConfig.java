@@ -7,10 +7,8 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 @Configuration
-@EnableWebSecurity
 public class SwaggerConfig {
 
     @Bean
@@ -21,11 +19,11 @@ public class SwaggerConfig {
                         .version("1.0.0")
                         .description("API documentation for the Gym Server Application"))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
-                .components(new Components().addSecuritySchemes("bearerAuth",
-                        new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
                                 .description("JWT Bearer Token for Authorization")));
     }
-
 }

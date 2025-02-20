@@ -5,11 +5,16 @@ import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.utils.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
 
 import java.util.List;
 
@@ -18,6 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "account", indexes = {@Index(name = "idx_email", columnList = "email"),
+        @Index(name = "idx_Uid", columnList = "firebaseUid"),
         @Index(name = "idx_phone", columnList = "phone")})
 @SuperBuilder
 public class User extends BaseEntity {
@@ -30,6 +36,9 @@ public class User extends BaseEntity {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    private String firebaseUid;
+
 
     @Column(unique = true)
     @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Invalid phone number format")
@@ -55,5 +64,6 @@ public class User extends BaseEntity {
 
     @OneToOne(mappedBy = "user")
     private Members members;
+
 
 }

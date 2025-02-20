@@ -34,4 +34,8 @@ public class UserService implements UserDetailsService {
         }
         return new AccountDetails(user);
     }
+    public User getUserById(String id) {
+        return authenticationRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+    }
 }

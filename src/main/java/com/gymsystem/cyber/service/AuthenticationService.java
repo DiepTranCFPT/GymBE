@@ -1,27 +1,34 @@
 package com.gymsystem.cyber.service;
 
-import com.gymsystem.cyber.iService.IAuthentication;
-import com.gymsystem.cyber.entity.User;
 
+import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.enums.UserRole;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
+import com.gymsystem.cyber.IService.IAuthentication;
+import com.gymsystem.cyber.exception.AuthException;
+import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
+import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
+import java.util.concurrent.CompletionException;
+
 
 
 @Service
@@ -36,7 +43,9 @@ public class AuthenticationService implements IAuthentication {
 
     private final TrainerRepository trainerRepository;
 
+
 //    private final AccountUtils accountUtils;
+
 
 
     @Autowired
@@ -45,12 +54,14 @@ public class AuthenticationService implements IAuthentication {
                                  PasswordEncoder passwordEncoder,
                                  TrainerRepository trainerRepository
 //            ,AccountUtils accountUtils
+
     ) {
         this.authenticationRepository = authenticationRepository;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
 //        this.accountUtils = accountUtils;
+
     }
 
 
@@ -81,6 +92,7 @@ public class AuthenticationService implements IAuthentication {
                     .token(tokenService.generateToken(user))
                     .phone(user.getPhone() == null ? "" : user.getPhone())
                     .email(user.getEmail())
+                    .id(user.getId())
                     .build();
             return ResponseObject.builder()
                     .data(accountResponse)
@@ -111,6 +123,8 @@ public class AuthenticationService implements IAuthentication {
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
                     .deleted(false).build();
 
+
+
             authenticationRepository.saveAndFlush(user);
 
             return ResponseObject.builder()
@@ -120,6 +134,7 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
 
 //    public User registerStaff(RegisterRequest registerRequest) {
 //        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
@@ -211,4 +226,114 @@ public class AuthenticationService implements IAuthentication {
 //    }
 
 
+
+    @Override
+    public CompletableFuture<ResponseObject> Oath(String token) throws FirebaseAuthException {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(token);
+                String email = firebaseToken.getEmail();
+                System.out.println(email);
+
+                // Tìm user theo email
+                User userOpt = authenticationRepository.findByEmail(email).map(user -> {
+                    if (user.isDeleted()) {
+                        throw new RuntimeException("account deleted");
+                    }
+                    if (!user.isEnable()) {
+                        throw new UsernameNotFoundException("Account is not enabled!");
+                    }
+                    return user;
+                }).orElse(null);
+
+                if (userOpt != null) {
+
+                    return ResponseObject.builder()
+                            .httpStatus(HttpStatus.OK)
+                            .data(LoginReponse.builder()
+                                    .email(userOpt.getEmail())
+                                    .name(userOpt.getName())
+                                    .phone(userOpt.getPhone())
+                                    .id(userOpt.getId())
+                                    .token(tokenService.generateToken(userOpt))
+                                    .build())
+                            .build();
+                }
+
+                // Nếu user không tồn tại, tạo user mới
+                User newUser = User.builder()
+                        .firebaseUid(firebaseToken.getUid())
+                        .email(email)
+                        .name(firebaseToken.getName())
+                        .role(UserRole.USER)
+                        .enable(true).deleted(false).build();
+
+                authenticationRepository.saveAndFlush(newUser);
+
+                return ResponseObject.builder()
+                        .httpStatus(HttpStatus.OK)
+                        .data(LoginReponse.builder()
+                                .email(newUser.getEmail())
+                                .name(newUser.getName())
+                                .phone(newUser.getPhone())
+                                .id(newUser.getId())
+                                .token(tokenService.generateToken(newUser))
+                                .build())
+                        .build();
+
+            } catch (FirebaseAuthException e) {
+                throw new CompletionException(e);
+            }
+        });
+    }
+
+    @Transactional
+    @Override
+    @Async
+    public CompletableFuture<ResponseObject> loginByGoogle(LoginGoogleRequest loginGoogleRequest) throws AccountNotFoundException {
+        // Tìm kiếm tài khoản bằng email
+        User account = authenticationRepository.findByEmail(loginGoogleRequest.getEmail())
+                .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        // Nếu tài khoản không tồn tại, tạo tài khoản mới
+        if (account == null) {
+            // Tạo tài khoản mới
+            account = User.builder()
+                    .name(loginGoogleRequest.getName())
+                    .email(loginGoogleRequest.getEmail())
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString())) // Sử dụng một password tạm thời
+                    .role(UserRole.USER)
+                    .enable(true)
+                    .verificationCode(UUID.randomUUID().toString())
+                    .deleted(false).build();
+
+            // Lưu tài khoản vào cơ sở dữ liệu
+            try {
+                authenticationRepository.saveAndFlush(account);
+            } catch (DataIntegrityViolationException e) {
+                throw new AuthException("Duplicate account creation error.");
+            }
+        }
+
+        if (!account.isEnable()) {
+            throw new AuthException("Account not verified. Please check your email to verify your account.");
+        }
+        String token = tokenService.generateToken(account);
+
+        // Trả về thông tin tài khoản đã đăng nhập
+        AccountResponse accountResponse = new AccountResponse();
+        accountResponse.setId(account.getId());
+        accountResponse.setEmail(account.getEmail());
+        accountResponse.setToken(token);
+        accountResponse.setName(account.getName());
+        accountResponse.setPhone(account.getPhone());
+
+        // Trả về thông tin phản hồi
+        return CompletableFuture.supplyAsync(() -> {
+            return ResponseObject.builder()
+                    .data(accountResponse)
+                    .message("Login successful")
+                    .httpStatus(HttpStatus.OK)
+                    .build();
+        });
+    }
 }

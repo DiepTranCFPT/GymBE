@@ -29,6 +29,8 @@ public class DefaultUserInitializer implements CommandLineRunner {
                     .name("ADMIN")
                     .enable(true)
                     .deleted(false).build();
+
+
             authenticationRepository.saveAndFlush(user);
         }
     }
