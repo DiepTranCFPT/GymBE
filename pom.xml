@@ -151,7 +151,6 @@
         </dependency>
 
 
-
         <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -165,7 +164,6 @@
             <version>1.6.0.Beta2</version>
             <scope>provided</scope>
         </dependency>
-
 
 
         <dependency>

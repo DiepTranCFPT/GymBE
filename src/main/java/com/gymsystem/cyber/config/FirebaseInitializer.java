@@ -15,11 +15,11 @@ import java.io.IOException;
 public class FirebaseInitializer {
 
 //    @Value("${firebase.config.path}")
-//   / private final String firebaseCredentials ="../resources/FirebaseSetting.json";
+   private final String firebaseCredentials = "FirebaseSetting.json";
     @Bean
     public FirebaseAuth firebaseAuth() throws IOException {
         // Đảm bảo bạn đã tải file config từ Firebase
-        FileInputStream serviceAccount = new FileInputStream("FirebaseSetting.json");
+        FileInputStream serviceAccount = new FileInputStream(firebaseCredentials);
 
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
