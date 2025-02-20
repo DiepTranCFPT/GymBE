@@ -4,6 +4,7 @@ package com.gymsystem.cyber.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "Notifications")
 public class Notifications {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

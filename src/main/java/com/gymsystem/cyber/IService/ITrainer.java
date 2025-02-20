@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;

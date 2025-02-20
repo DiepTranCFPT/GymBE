@@ -5,12 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Builder
+@SuperBuilder
 @Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Table("subscriptions")
 public class Subscriptions {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

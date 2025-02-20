@@ -1,8 +1,10 @@
 package com.gymsystem.cyber.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Entity
+@Table("reviews")
 public class Reviews {
 
     @Id

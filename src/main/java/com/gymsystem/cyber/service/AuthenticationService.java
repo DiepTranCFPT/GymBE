@@ -6,7 +6,7 @@ import com.gymsystem.cyber.enums.UserRole;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.gymsystem.cyber.IService.IAuthentication;
+import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.exception.AuthException;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Response.AccountResponse;

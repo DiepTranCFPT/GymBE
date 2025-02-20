@@ -12,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 @Data
@@ -19,6 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @SuperBuilder
+@Table("members")
 public class Members {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -1,8 +1,8 @@
 package com.gymsystem.cyber.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
-import com.gymsystem.cyber.IService.IAuthentication;
-import com.gymsystem.cyber.IService.IFaceRecodeService;
+import com.gymsystem.cyber.iService.IAuthentication;
+import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import com.gymsystem.cyber.model.ResponseObject;

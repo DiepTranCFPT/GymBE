@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.model.Request.TrainerRequest;
 import com.gymsystem.cyber.model.ResponseObject;

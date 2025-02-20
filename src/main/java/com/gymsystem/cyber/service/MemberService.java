@@ -29,7 +29,6 @@ public class MemberService implements iMember {
         this.paymentRepository = paymentRepository;
     }
 
-
     @Override
     public ResponseObject registerMember(MemberRegistrationRequest member) {
         User user = accountUtils.getCurrentUser();

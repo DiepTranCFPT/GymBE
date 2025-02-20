@@ -1,6 +1,6 @@
 package com.gymsystem.cyber.service;
 
-import com.gymsystem.cyber.IService.IFaceRecodeService;
+import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;

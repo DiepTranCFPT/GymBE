@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
