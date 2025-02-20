@@ -27,8 +27,6 @@ public class AuthenticationController {
     public AuthenticationController(IAuthentication authenticationService) {
         this.authenticationService = authenticationService;
     }
-
-
     @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping("/register")
