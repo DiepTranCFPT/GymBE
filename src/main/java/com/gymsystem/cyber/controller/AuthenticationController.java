@@ -1,6 +1,6 @@
 package com.gymsystem.cyber.controller;
 
-import com.gymsystem.cyber.IService.IAuthentication;
+import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.model.Request.LoginRequest;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @CrossOrigin("*")
-@RequestMapping("api/authen")
+@RequestMapping("api/auth")
 @Tag(name = "User Controller", description = "Quản lý các hoạt động người dùng như tạo mới, cập nhật, xóa, xác minh, v.v.")
 public class AuthenticationController {
 

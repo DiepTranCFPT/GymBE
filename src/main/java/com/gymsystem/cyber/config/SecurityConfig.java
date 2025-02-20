@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import com.gymsystem.cyber.exception.AuthenticationHandler;
@@ -45,11 +47,10 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/api-docs/**",
-            "/admin/login",
+            "/api/auth/login",
             "/admin/register",
             "/api/authen/login/**",
-            "/api/test/public-api",
-            "/"
+            "/api/test/public-api"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
@@ -104,6 +105,13 @@ public class SecurityConfig {
         SecretKeySpec secretKeySpec = new SecretKeySpec(SECRET_KEY.getBytes(), "HS512");
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
     }
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
+        // Create and return the default AuthenticationManager
+        AuthenticationManager authenticationManager = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
+                .build();
+        return authenticationManager;
+    }
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -117,8 +125,6 @@ public class SecurityConfig {
     public CustomJwtGrantedAuthoritiesConverter customJwtGrantedAuthoritiesConverter() {
         return new CustomJwtGrantedAuthoritiesConverter();
     }
-
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);

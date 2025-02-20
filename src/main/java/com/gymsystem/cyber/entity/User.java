@@ -5,14 +5,13 @@ import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.utils.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -54,5 +53,7 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] avata;
 
+    @OneToOne(mappedBy = "user")
+    private Members members;
 
 }

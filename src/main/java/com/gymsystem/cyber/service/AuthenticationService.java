@@ -1,20 +1,16 @@
 package com.gymsystem.cyber.service;
 
-import com.gymsystem.cyber.IService.IAuthentication;
-import com.gymsystem.cyber.entity.Trainer;
+import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.entity.User;
 
 import com.gymsystem.cyber.enums.UserRole;
-import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-import com.gymsystem.cyber.utils.AccountUtils;
 
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
-import com.gymsystem.cyber.model.Request.RegisterRequestPT;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
@@ -25,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -115,7 +109,7 @@ public class AuthenticationService implements IAuthentication {
 //                    .phone(registerRequest.getPhone() == null ? "" : registerRequest.getPhone())
                     .enable(true)
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
-                    .build();
+                    .deleted(false).build();
 
             authenticationRepository.saveAndFlush(user);
 

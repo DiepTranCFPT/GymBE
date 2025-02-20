@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
@@ -11,6 +11,4 @@ public interface IAuthentication {
 
     CompletableFuture<ResponseObject> login(LoginRequest loginRequest);
     CompletableFuture<ResponseObject> register(RegisterRequest registerRequest) throws AccountNotFoundException;
-
-
 }

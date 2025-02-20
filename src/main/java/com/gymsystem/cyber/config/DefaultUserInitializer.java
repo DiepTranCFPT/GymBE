@@ -28,7 +28,7 @@ public class DefaultUserInitializer implements CommandLineRunner {
                     .email("swpproject2024@gmail.com")
                     .name("ADMIN")
                     .enable(true)
-                    .build();
+                    .deleted(false).build();
             authenticationRepository.saveAndFlush(user);
         }
     }
