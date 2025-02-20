@@ -5,27 +5,41 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 @PropertySource("classpath:application.properties")
 public class FirebaseInitializer {
 
-//    @Value("${firebase.config.path}")
-   private final String firebaseCredentials = "FirebaseSetting.json";
-    @Bean
-    public FirebaseAuth firebaseAuth() throws IOException {
-        // Đảm bảo bạn đã tải file config từ Firebase
-        FileInputStream serviceAccount = new FileInputStream(firebaseCredentials);
+    private String firebaseCredentials = "./FirebaseSetting.json";
 
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
-                .build();
+//    @Bean
+//    public FirebaseAuth firebaseAuth() throws IOException {
+//        // Đảm bảo bạn đã tải file config từ Firebase
+//        FileInputStream serviceAccount = new FileInputStream(firebaseCredentials);
+//
+//        FirebaseOptions options = new FirebaseOptions.Builder()
+//                .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
+//                .build();
+//
+//        FirebaseApp.initializeApp(options);
+//        return FirebaseAuth.getInstance();
+//    }
+@Bean
+public FirebaseAuth firebaseAuth() throws IOException {
+    InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
 
-        FirebaseApp.initializeApp(options);
-        return FirebaseAuth.getInstance();
-    }
+    FirebaseOptions options = new FirebaseOptions.Builder()
+            .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
+            .build();
+
+    FirebaseApp.initializeApp(options);
+    return FirebaseAuth.getInstance();
+}
+
 }
