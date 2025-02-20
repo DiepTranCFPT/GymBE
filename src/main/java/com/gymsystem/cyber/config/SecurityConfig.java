@@ -6,30 +6,24 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import com.gymsystem.cyber.exception.AuthenticationHandler;
-import com.gymsystem.cyber.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.ArrayList;
-import java.util.Collection;
 
 @Configuration
 @EnableWebSecurity
@@ -49,6 +43,8 @@ public class SecurityConfig {
             "/admin/register",
             "/api/authen/login/**",
             "/api/test/public-api",
+            "/api/authen/oath/login/google",
+            "/login/oauth2/code/google",
             "/"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
@@ -57,7 +53,9 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/admin/register_PT",
             "/api/test/admin-api/**",
-            "/api/authen/register/**"
+            "/api/authen/register/**",
+            "/api/authen/{{id}}/register-faceid/**",
+            "/"
     };
 
     final AuthenticationHandler authenticationHandler;
@@ -90,6 +88,7 @@ public class SecurityConfig {
                             authenticationHandler.handleAccessDeniedException(request, response);
                         }))
                 .userDetailsService(userService)
+                .formLogin(lg -> lg.loginPage("/login/oauth2/code/google"))
                 .csrf(AbstractHttpConfigurer::disable);
 
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(tokenService, jwtDecoder(), userService),

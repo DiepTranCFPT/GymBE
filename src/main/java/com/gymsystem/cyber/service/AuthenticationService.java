@@ -1,32 +1,30 @@
 package com.gymsystem.cyber.service;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.gymsystem.cyber.IService.IAuthentication;
-import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
 
 import com.gymsystem.cyber.enums.UserRole;
-import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-import com.gymsystem.cyber.utils.AccountUtils;
 
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
-import com.gymsystem.cyber.model.Request.RegisterRequestPT;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -42,21 +40,17 @@ public class AuthenticationService implements IAuthentication {
 
     private final TrainerRepository trainerRepository;
 
-//    private final AccountUtils accountUtils;
-
 
     @Autowired
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
                                  PasswordEncoder passwordEncoder,
                                  TrainerRepository trainerRepository
-//            ,AccountUtils accountUtils
     ) {
         this.authenticationRepository = authenticationRepository;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
-//        this.accountUtils = accountUtils;
     }
 
 
@@ -87,6 +81,7 @@ public class AuthenticationService implements IAuthentication {
                     .token(tokenService.generateToken(user))
                     .phone(user.getPhone() == null ? "" : user.getPhone())
                     .email(user.getEmail())
+                    .id(user.getId())
                     .build();
             return ResponseObject.builder()
                     .data(accountResponse)
@@ -126,6 +121,56 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
+    @Override
+    public CompletableFuture<ResponseObject> Oath(String token) throws FirebaseAuthException {
+        FirebaseToken firebaseToken = FirebaseAuth.getInstance().verifyIdToken(token);
+
+        String email = firebaseToken.getEmail();
+
+        var user = authenticationRepository.findByEmail(email).map(user1 -> {
+            if (user1.isDeleted()) {
+                throw new UsernameNotFoundException("Account deleted");
+            }
+            if (!user1.isEnable()) {
+                throw new UsernameNotFoundException("Account is Enable!");
+            }
+            return user1;
+        }).get();
+
+        if (user != null) {
+            return CompletableFuture.completedFuture(ResponseObject.builder()
+                    .httpStatus(HttpStatus.OK)
+                    .data(LoginReponse.builder()
+                            .email(user.getEmail())
+                            .name(user.getName())
+                            .phone(user.getPhone())
+                            .id(user.getId())
+                            .token(tokenService.generateToken(user))
+                            .build())
+                    .build());
+        }
+        User temp = User.builder()
+                .firebaseUid(firebaseToken.getUid())
+                .email(email)
+                .name(firebaseToken.getName())
+                .role(UserRole.USER)
+                .build();
+
+        authenticationRepository.saveAndFlush(temp);
+
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .data(LoginReponse.builder()
+                        .email(temp.getEmail())
+                        .name(temp.getName())
+                        .phone(temp.getPhone())
+                        .id(temp.getId())
+                        .token(tokenService.generateToken(temp))
+                        .build())
+                .build());
+    }
+
 
 //    public User registerStaff(RegisterRequest registerRequest) {
 //        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Google</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h2>Đăng nhập bằng Google</h2>
+<button id="loginGoogle">Đăng nhập với Google</button>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    console.log("Script loaded"); // Kiểm tra xem script có tải không
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDeu5y2SALaYGXjSX_s-GW75jeHyTqwpuQ",
+        authDomain: "cyber-70710.firebaseapp.com",
+        projectId: "cyber-70710",
+        storageBucket: "cyber-70710.appspot.com",
+        messagingSenderId: "1092221484384",
+        appId: "1:1092221484384:web:f1317bde11586a27f67205",
+        measurementId: "G-PZY5F1TP02"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    document.getElementById("loginGoogle").addEventListener("click", async () => {
+        console.log("Button clicked!"); // Kiểm tra xem có click không
+        try {
+            const result = await signInWithPopup(auth, provider);
+            console.log("Google login success:", result);
+            const idToken = await result.user.getIdToken();
+            console.log("ID Token:", idToken);
+
+            const response = await fetch("http://localhost:8080/api/authen/oath/login/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "idToken": idToken
+                }
+            });
+
+            const data = await response.json();
+            console.log("Server Response:", data);
+        } catch (error) {
+            console.error("Lỗi đăng nhập:", error);
+        }
+    });
+</script>
+
+
+</body>
+</html>

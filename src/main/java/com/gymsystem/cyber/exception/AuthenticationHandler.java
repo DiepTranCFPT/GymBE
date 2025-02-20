@@ -1,6 +1,7 @@
 package com.gymsystem.cyber.exception;
 
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.model.ResponseObject;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.ServletException;
@@ -103,6 +104,13 @@ public class AuthenticationHandler implements AuthenticationEntryPoint {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ResponseObject> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ResponseObject(ex.getMessage(), HttpStatus.UNAUTHORIZED, null));
+    }
+
+
+    @ExceptionHandler(FirebaseAuthException.class)
+    public ResponseEntity<ResponseObject> handleFirebaseAuthException(FirebaseAuthException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ResponseObject(ex.getMessage(), HttpStatus.UNAUTHORIZED, null));
     }
