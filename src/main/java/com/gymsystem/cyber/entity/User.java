@@ -9,10 +9,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+
+
+import java.util.List;
 
 @Entity
 @Data
@@ -35,6 +39,7 @@ public class User extends BaseEntity {
 
     private String firebaseUid;
 
+
     @Column(unique = true)
     @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Invalid phone number format")
     @Size(min = 10, max = 15, message = "Phone number must be between 10 and 15 digits")
@@ -56,6 +61,9 @@ public class User extends BaseEntity {
     @Basic(fetch = FetchType.LAZY)
     @Column(columnDefinition = "LONGBLOB")
     private byte[] avata;
+
+    @OneToOne(mappedBy = "user")
+    private Members members;
 
 
 }
