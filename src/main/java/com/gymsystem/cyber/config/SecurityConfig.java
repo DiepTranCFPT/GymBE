@@ -6,24 +6,32 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import com.gymsystem.cyber.exception.AuthenticationHandler;
+import com.gymsystem.cyber.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Configuration
 @EnableWebSecurity
@@ -39,16 +47,10 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/api-docs/**",
-            "/admin/login",
+            "/api/auth/login",
             "/admin/register",
             "/api/authen/login/**",
-            "/api/test/public-api",
-            "/api/authen/test/login",
-            "/api/authen/profile",
-            "/api/trainers/**",
-            "/api/authen/firebase-login",
-            "/login/oauth2/code/google",
-            "/"
+            "/api/test/public-api"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
@@ -56,10 +58,7 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/admin/register_PT",
             "/api/test/admin-api/**",
-            "/api/authen/register/**",
-            "/api/authen/{{id}}/register-faceid/**",
-            "/api/trainers/**",
-            "/"
+            "/api/authen/register/**"
     };
 
     final AuthenticationHandler authenticationHandler;
@@ -93,6 +92,7 @@ public class SecurityConfig {
                         }))
                 .userDetailsService(userService)
                 .csrf(AbstractHttpConfigurer::disable);
+
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(tokenService, jwtDecoder(), userService),
                 UsernamePasswordAuthenticationFilter.class);
 
@@ -104,6 +104,13 @@ public class SecurityConfig {
     JwtDecoder jwtDecoder() {
         SecretKeySpec secretKeySpec = new SecretKeySpec(SECRET_KEY.getBytes(), "HS512");
         return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS512).build();
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
+        // Create and return the default AuthenticationManager
+        AuthenticationManager authenticationManager = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
+                .build();
+        return authenticationManager;
     }
 
     @Bean
@@ -118,8 +125,6 @@ public class SecurityConfig {
     public CustomJwtGrantedAuthoritiesConverter customJwtGrantedAuthoritiesConverter() {
         return new CustomJwtGrantedAuthoritiesConverter();
     }
-
-
     @Bean
     PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
