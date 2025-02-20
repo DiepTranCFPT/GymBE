@@ -43,7 +43,10 @@ public class SecurityConfig {
             "/admin/register",
             "/api/authen/login/**",
             "/api/test/public-api",
-            "/api/authen/oath/login/google",
+            "/api/authen/test/login",
+            "/api/authen/profile",
+            "/api/trainers/**",
+            "/api/authen/firebase-login",
             "/login/oauth2/code/google",
             "/"
     };
@@ -55,6 +58,7 @@ public class SecurityConfig {
             "/api/test/admin-api/**",
             "/api/authen/register/**",
             "/api/authen/{{id}}/register-faceid/**",
+            "/api/trainers/**",
             "/"
     };
 
@@ -88,9 +92,7 @@ public class SecurityConfig {
                             authenticationHandler.handleAccessDeniedException(request, response);
                         }))
                 .userDetailsService(userService)
-                .formLogin(lg -> lg.loginPage("/login/oauth2/code/google"))
                 .csrf(AbstractHttpConfigurer::disable);
-
         httpSecurity.addFilterBefore(new JwtAuthenticationFilter(tokenService, jwtDecoder(), userService),
                 UsernamePasswordAuthenticationFilter.class);
 

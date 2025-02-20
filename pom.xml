@@ -190,7 +190,10 @@
             <version>24.1.0</version>
             <scope>compile</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
 
         <!-- OpenCV Dependency -->
         <dependency>
@@ -236,5 +239,4 @@
             </resource>
         </resources>
     </build>
-
 </project>

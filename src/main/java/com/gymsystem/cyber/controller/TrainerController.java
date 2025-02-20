@@ -1,8 +1,10 @@
 package com.gymsystem.cyber.controller;
 
+import com.gymsystem.cyber.IService.ITrainerService;
 import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.model.Request.TrainerRequest;
+import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.TrainerRepository;
 import com.gymsystem.cyber.service.TrainerService;
 import com.gymsystem.cyber.service.UserService;
@@ -12,59 +14,48 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/trainers")
 @CrossOrigin("*")
 public class TrainerController {
 
-    private final TrainerService trainerService;
+    private final ITrainerService trainerService;
     private final UserService userService;
+
     @Autowired
-    public TrainerController(TrainerService trainerService, UserService userService) {
+    public TrainerController(ITrainerService trainerService, UserService userService) {
         this.trainerService = trainerService;
         this.userService = userService;
     }
 
-    @Operation(summary = "Lấy danh sách tất cả huấn luyện viên", description = "Chỉ ADMIN mới được phép thực hiện.")
-    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @GetMapping
-    public List<Trainer> getAllTrainers() {
-        return trainerService.getAllTrainers();
+    @Operation(summary = "Tạo mới huấn luyện viên", description = "Chỉ ADMIN được phép thực hiện.")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping
+    public CompletableFuture<ResponseObject> createTrainer(@RequestParam String email, @RequestBody TrainerRequest trainerRequest) {
+        return trainerService.creatTrainer(trainerRequest, email);
     }
 
-    @Operation(summary = "Lấy thông tin huấn luyện viên theo ID", description = "ADMIN và USER đều có thể truy cập.")
-    //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+    @GetMapping("/list-all")
+    @Operation(summary = "lay tat ca cac Pt con hoat dong tren he thong", description = "only admin")
+    public CompletableFuture<ResponseObject> getAllTrainer() {
+        return trainerService.getAllTrains();
+    }
+
     @GetMapping("/{id}")
-    public Trainer getTrainerById(@PathVariable String id) {
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "lau Pt voi id", description = "only admin")
+    public CompletableFuture<ResponseObject> getTrainerbyId(@PathVariable(value = "id") String id) {
         return trainerService.getTrainerById(id);
     }
 
-    @Operation(summary = "Tạo mới huấn luyện viên", description = "Chỉ ADMIN được phép thực hiện.")
-    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PostMapping
-    public Trainer createTrainer(@RequestBody TrainerRequest trainerRequest) {
-        User user = userService.getUserById(trainerRequest.getUserId());// Lấy User từ userId
-        return trainerService.saveOrUpdateTrainer(trainerRequest, user);
-    }
 
-    @Operation(summary = "Cập nhật thông tin huấn luyện viên", description = "Chỉ ADMIN được phép thực hiện.")
-    //@PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PutMapping("/{id}")
-    public Trainer updateTrainer(@PathVariable String id, @RequestBody TrainerRequest trainerRequest) {
-        User user = userService.getUserById(trainerRequest.getUserId());
-        Trainer trainer = trainerService.getTrainerById(id);
-        trainer.setSpecialization(trainerRequest.getSpecialization());
-        trainer.setExperience_year(trainerRequest.getExperienceYear());
-        trainer.setAvailability(trainerRequest.isAvailability());
-        trainer.setUser(user);
-        return trainerService.saveOrUpdateTrainer(trainerRequest, user);
-    }
-
-    @Operation(summary = "Xóa huấn luyện viên", description = "Chỉ ADMIN được phép thực hiện.")
-   // @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public void deleteTrainer(@PathVariable String id) {
-        trainerService.deleteTrainer(id);
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "lock Pt voi id", description = "only admin")
+    public CompletableFuture<ResponseObject> deletedTrainer(@PathVariable("id") String id) {
+        return trainerService.deleteTrainer(id);
     }
+
 }

@@ -14,7 +14,6 @@ import java.io.IOException;
 public class NewExperessApplication {
 
     public static void main(String[] args) {
-
         SpringApplication.run(NewExperessApplication.class, args);
         openSwaggerUI();
         OpenCV.loadLocally();
