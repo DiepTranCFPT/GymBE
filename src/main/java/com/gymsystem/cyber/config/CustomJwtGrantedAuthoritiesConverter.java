@@ -28,6 +28,4 @@ public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Coll
                 .collect(Collectors.toList());
     }
 
-
 }
-

@@ -19,6 +19,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "account", indexes = {@Index(name = "idx_email", columnList = "email"),
+        @Index(name = "idx_Uid", columnList = "firebaseUid"),
         @Index(name = "idx_phone", columnList = "phone")})
 @SuperBuilder
 public class User extends BaseEntity {
@@ -31,6 +32,8 @@ public class User extends BaseEntity {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    private String firebaseUid;
 
     @Column(unique = true)
     @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Invalid phone number format")

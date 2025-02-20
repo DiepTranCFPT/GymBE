@@ -4,8 +4,13 @@ import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TrainerRepository extends JpaRepository<Trainer,Long> {
+import java.util.Optional;
 
-    Trainer findByUser(User user);
+public interface TrainerRepository extends JpaRepository<Trainer,String> {
+
+    Optional<Trainer> findByUser(User user);
+
+
+    boolean existsByUser(User user);
 
 }
