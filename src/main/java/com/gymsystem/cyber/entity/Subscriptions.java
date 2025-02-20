@@ -1,23 +1,30 @@
 package com.gymsystem.cyber.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Builder
+@Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 public class Subscriptions {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "member_id")
     private Members members;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "subscriptions")
     @JoinColumn(name = "plan_id")
     private MemberShipPlans memberShipPlans;
 
-    @OneToOne
+    @OneToOne(mappedBy = "subscriptions")
     @JoinColumn(name = "payment_id")
     private Payment payment;
 }

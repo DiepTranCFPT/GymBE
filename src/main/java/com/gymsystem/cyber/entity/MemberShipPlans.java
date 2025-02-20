@@ -1,12 +1,11 @@
 package com.gymsystem.cyber.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Data
 @Entity
 public class MemberShipPlans {
 
@@ -23,5 +22,8 @@ public class MemberShipPlans {
     private LocalDateTime startDate;
 
     private LocalDateTime endDate;
+
+    @OneToOne
+    private Subscriptions subscriptions;
 
 }

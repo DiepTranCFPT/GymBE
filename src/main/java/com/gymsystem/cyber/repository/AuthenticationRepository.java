@@ -6,8 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface AuthenticationRepository extends JpaRepository<User, String> {   // dua ra daatabase
-    User findByEmailAndRole(String email, String role);
+public interface AuthenticationRepository extends JpaRepository<User, Long> {   // dua ra daatabase
 
 //    User findByEmail(String email);
 
@@ -21,9 +20,6 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
     boolean existsByEmail(String email);
 
     Optional<User> findByEmail(String email);
-
-    Optional<User> findById(String id);
-
-    Optional<User> findByFirebaseUid(String firebase);
+    Optional<User> findByName(String name);
 
 }
