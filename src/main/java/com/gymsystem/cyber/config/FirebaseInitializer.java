@@ -8,7 +8,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,28 +17,15 @@ public class FirebaseInitializer {
 
     private String firebaseCredentials = "./FirebaseSetting.json";
 
-//    @Bean
-//    public FirebaseAuth firebaseAuth() throws IOException {
-//        // Đảm bảo bạn đã tải file config từ Firebase
-//        FileInputStream serviceAccount = new FileInputStream(firebaseCredentials);
-//
-//        FirebaseOptions options = new FirebaseOptions.Builder()
-//                .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
-//                .build();
-//
-//        FirebaseApp.initializeApp(options);
-//        return FirebaseAuth.getInstance();
-//    }
-@Bean
-public FirebaseAuth firebaseAuth() throws IOException {
-    InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
+    @Bean
+    public FirebaseAuth firebaseAuth() throws IOException {
+        InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
 
-    FirebaseOptions options = new FirebaseOptions.Builder()
-            .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
-            .build();
+        FirebaseOptions options = new FirebaseOptions.Builder()
+                .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
+                .build();
 
-    FirebaseApp.initializeApp(options);
-    return FirebaseAuth.getInstance();
-}
-
+        FirebaseApp.initializeApp(options);
+        return FirebaseAuth.getInstance();
+    }
 }
