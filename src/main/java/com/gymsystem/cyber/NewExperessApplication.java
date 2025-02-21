@@ -1,7 +1,7 @@
 package com.gymsystem.cyber;
 
 
-import nu.pattern.OpenCV;
+//import nu.pattern.OpenCV;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -16,7 +16,7 @@ public class NewExperessApplication {
     public static void main(String[] args) {
         SpringApplication.run(NewExperessApplication.class, args);
         openSwaggerUI();
-        OpenCV.loadLocally();
+//        OpenCV.loadLocally();
     }
 
     private static void openSwaggerUI() {

@@ -10,12 +10,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Pattern;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Component
 public class AccountUtils {
@@ -66,12 +60,12 @@ public class AccountUtils {
         return user.orElse(null);
     }
 
-    public static byte[] matToByteArray(Mat mat) throws IOException {
-        Path tempFile = Files.createTempFile("face", ".jpg");
-        Imgcodecs.imwrite(tempFile.toString(), mat);
-        byte[] imageBytes = Files.readAllBytes(tempFile);
-        Files.delete(tempFile);
-        return imageBytes;
-
-    }
+//    public static byte[] matToByteArray(Mat mat) throws IOException {
+//        Path tempFile = Files.createTempFile("face", ".jpg");
+//        Imgcodecs.imwrite(tempFile.toString(), mat);
+//        byte[] imageBytes = Files.readAllBytes(tempFile);
+//        Files.delete(tempFile);
+//        return imageBytes;
+//
+//    }
 }

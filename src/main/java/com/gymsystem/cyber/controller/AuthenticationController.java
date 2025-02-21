@@ -2,7 +2,6 @@ package com.gymsystem.cyber.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.iService.IAuthentication;
-import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import com.gymsystem.cyber.model.ResponseObject;
@@ -36,12 +35,10 @@ import java.util.concurrent.CompletableFuture;
 public class AuthenticationController {
 
     private final IAuthentication authenticationService;
-    private final IFaceRecodeService iFaceRecodeService;
 
     @Autowired
-    public AuthenticationController(IAuthentication authenticationService, IFaceRecodeService iFaceRecodeService) {
+    public AuthenticationController(IAuthentication authenticationService) {
         this.authenticationService = authenticationService;
-        this.iFaceRecodeService = iFaceRecodeService;
     }
 
 
@@ -66,14 +63,14 @@ public class AuthenticationController {
         return authenticationService.Oath(token);
     }
 
-    @PostMapping(value = "{id}/register-faceid", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @Operation(summary = "Đăng ký người dùng với faceid", description = "Đăng ký một người dùng mới với faceid.")
-    public CompletableFuture<ResponseObject> registerFaceId(@PathVariable("id") String id,
-                                                            @RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
-        return iFaceRecodeService.regisFaceIDforAccount(id, file);
-    }
+//    @PostMapping(value = "{id}/register-faceid", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+//            produces = {MediaType.APPLICATION_JSON_VALUE})
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//    @Operation(summary = "Đăng ký người dùng với faceid", description = "Đăng ký một người dùng mới với faceid.")
+//    public CompletableFuture<ResponseObject> registerFaceId(@PathVariable("id") String id,
+//                                                            @RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
+//        return iFaceRecodeService.regisFaceIDforAccount(id, file);
+//    }
 
     @GetMapping("/profile")
     @Operation(summary = "đang nhap (moi quyen)")

@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.iService;
+package com.gymsystem.cyber.IService;
 
 import com.gymsystem.cyber.model.ResponseObject;
 import org.springframework.web.multipart.MultipartFile;
