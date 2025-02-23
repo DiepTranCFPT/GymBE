@@ -20,10 +20,10 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Payment {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
     @OneToOne(mappedBy = "payment")
-    @JoinColumn(name = "subscription_id")
     private Subscriptions subscriptions;
 
     private Double amount;

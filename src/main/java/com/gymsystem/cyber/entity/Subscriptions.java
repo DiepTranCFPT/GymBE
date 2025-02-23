@@ -17,6 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Subscriptions {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @JoinColumn(name= "subscription_id")
     protected String id;
 
     @OneToOne(cascade = CascadeType.ALL)

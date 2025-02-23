@@ -60,14 +60,12 @@ public class MemberService implements iMember {
         }
 
         Payment payment = Payment.builder()
-                .id(UUID.randomUUID().toString())
                     .amount(membershipPlansRepository.findByName(member.getName()).getPrice())
                     .status(false)
                     .paymentMethod("VNPAY")
                     .build();
         paymentRepository.save(payment);
         Members members = Members.builder()
-                .id(UUID.randomUUID().toString())
                     .name(member.getName())
                     .price(membershipPlansRepository.findByName(member.getName()).getPrice())
                     .duration(member.getDuration())
@@ -78,7 +76,6 @@ public class MemberService implements iMember {
         memberRepository.save(members);
 
         Subscriptions subscriptions =  Subscriptions.builder()
-                .id(UUID.randomUUID().toString())
                 .memberShipPlans(membershipPlansRepository.findByName(member.getName()))
                 .payment(payment)
                 .members(members)
