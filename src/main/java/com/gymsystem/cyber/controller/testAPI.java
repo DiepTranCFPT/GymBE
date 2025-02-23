@@ -2,11 +2,14 @@ package com.gymsystem.cyber.controller;
 
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.cglib.core.Local;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
 
 @RestController
 @SecurityRequirement(name = "bearerAuth")
@@ -21,8 +24,8 @@ public class testAPI {
 
 
     @GetMapping("/admin-api")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String adminAPI() {
-        return "This is an admin API";
+        int localDateTime = LocalDateTime.now().getDayOfYear();
+        return localDateTime + "This is an admin API";
     }
 }
