@@ -7,9 +7,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Builder
+@SuperBuilder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,14 +20,13 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
-    @OneToOne
+    @OneToOne(mappedBy = "payment")
     @JoinColumn(name = "subscription_id")
     private Subscriptions subscriptions;
 
-    private double amount;
+    private Double amount;
 
     private String paymentMethod;
 

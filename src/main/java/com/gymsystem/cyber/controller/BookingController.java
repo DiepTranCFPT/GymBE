@@ -1,12 +1,11 @@
 package com.gymsystem.cyber.controller;
 
 
-import com.gymsystem.cyber.entity.User;
+
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.utils.AccountUtils;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

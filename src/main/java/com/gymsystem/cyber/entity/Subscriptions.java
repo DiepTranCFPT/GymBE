@@ -2,7 +2,7 @@ package com.gymsystem.cyber.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -19,15 +19,16 @@ public class Subscriptions {
     @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "member_id")
     private Members members;
 
-    @OneToOne(mappedBy = "subscriptions")
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "plan_id")
     private MemberShipPlans memberShipPlans;
 
-    @OneToOne(mappedBy = "subscriptions")
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "payment_id")
     private Payment payment;
+
 }

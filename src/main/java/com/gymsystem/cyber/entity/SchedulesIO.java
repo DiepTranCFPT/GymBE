@@ -19,7 +19,6 @@ import org.springframework.data.relational.core.mapping.Table;
 public class SchedulesIO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
     @ManyToOne(fetch = FetchType.LAZY)

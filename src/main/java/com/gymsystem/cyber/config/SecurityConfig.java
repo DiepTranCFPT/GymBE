@@ -42,6 +42,7 @@ public class SecurityConfig {
             "/admin/login",
             "/admin/register",
             "/api/authen/login/**",
+            "/api/authen/register/**",
             "/api/test/public-api",
             "/api/authen/test/login",
             "/api/authen/profile",
@@ -72,7 +73,6 @@ public class SecurityConfig {
                           @Lazy CustomJwtGrantedAuthoritiesConverter customJwtGrantedAuthoritiesConverter, UserService userService, TokenService tokenService) {
         this.authenticationHandler = authenticationHandler;
         this.customJwtGrantedAuthoritiesConverter = customJwtGrantedAuthoritiesConverter;
-
         this.userService = userService;
         this.tokenService = tokenService;
     }
