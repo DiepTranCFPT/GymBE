@@ -3,6 +3,7 @@ package com.gymsystem.cyber.service;
 import com.gymsystem.cyber.entity.*;
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
+import com.gymsystem.cyber.model.Response.BookingRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.*;
 import com.gymsystem.cyber.utils.AccountUtils;
@@ -48,9 +49,6 @@ public class MemberService implements iMember {
                         .build();
             }
         }
-
-
-
         if(!membershipPlansRepository.existsByName(member.getName())){
                 return ResponseObject.builder()
                         .httpStatus(HttpStatus.BAD_REQUEST)
@@ -58,7 +56,6 @@ public class MemberService implements iMember {
                         .data(false)
                         .build();
         }
-
         Payment payment = Payment.builder()
                     .amount(membershipPlansRepository.findByName(member.getName()).getPrice())
                     .status(false)
@@ -109,5 +106,29 @@ public class MemberService implements iMember {
                     .message("register successfully!")
                     .data(true)
                     .build();
+    }
+
+    @Override
+    public ResponseObject getAllMembers() {
+
+        List<SchedulesIO> schedulesIOS = scheduleIORepository.findAll();
+        List<BookingRespone> bookingRespones = new ArrayList<>();
+        for (SchedulesIO schedulesIO : schedulesIOS){
+                if(schedulesIO.getDate().getDayOfYear() == LocalDateTime.now().getDayOfYear()+1 && schedulesIO.getDate().getYear() == LocalDateTime.now().getYear()){
+                    bookingRespones.add(BookingRespone.builder()
+                            .email(schedulesIO.getMembers().getUser().getEmail())
+                            .member_name(schedulesIO.getMembers().getUser().getName())
+                            .trainer_name("Trainer")
+                            .date(schedulesIO.getDate())
+                            .plans(schedulesIO.getMembers().getSubscriptions().getMemberShipPlans().getName())
+                            .build());
+
+                }
+        }
+        return ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("Get all members successfully!")
+                .data(bookingRespones)
+                .build();
     }
 }

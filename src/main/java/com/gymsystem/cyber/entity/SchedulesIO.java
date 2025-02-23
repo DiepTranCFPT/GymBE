@@ -21,11 +21,11 @@ public class SchedulesIO {
     @Id
     protected String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Members members;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "trainer_id")
     private Trainer trainer;
 

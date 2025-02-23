@@ -63,7 +63,6 @@ public class User extends BaseEntity {
     private byte[] avata;
 
     @OneToOne(mappedBy = "user")
-    @JoinColumn(name = "member_id")
     private Members members;
 
 

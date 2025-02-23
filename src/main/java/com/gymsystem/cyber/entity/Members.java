@@ -34,7 +34,7 @@ public class Members {
     private User user;
 
     @NotNull
-    private String name;
+    private String name ;
 
     private String decription;
 

@@ -22,6 +22,8 @@ public class BookingController {
     public ResponseObject registerMember(@RequestBody MemberRegistrationRequest member){
         return memberService.registerMember(member);
     }
-
-
+    @GetMapping
+    public ResponseObject getMember(){
+        return memberService.getAllMembers();
+    }
 }

@@ -7,4 +7,6 @@ import com.gymsystem.cyber.model.ResponseObject;
 public interface iMember {
 
     ResponseObject registerMember(MemberRegistrationRequest member);
+
+    ResponseObject getAllMembers();
 }
