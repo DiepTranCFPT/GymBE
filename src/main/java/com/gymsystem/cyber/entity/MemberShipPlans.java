@@ -25,6 +25,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class MemberShipPlans {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
     private String name;
@@ -40,7 +41,6 @@ public class MemberShipPlans {
     private boolean isActive;
 
     @OneToOne(mappedBy = "memberShipPlans")
-    @JoinColumn(name = "subscription_id")
     private Subscriptions subscriptions;
 
 }

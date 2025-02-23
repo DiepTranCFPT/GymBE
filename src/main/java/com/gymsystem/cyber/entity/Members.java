@@ -26,6 +26,7 @@ import org.springframework.data.relational.core.mapping.Table;
 public class Members {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     protected String id;
 
     @OneToOne
@@ -53,14 +54,11 @@ public class Members {
     private List<SchedulesIO> schedulesIO;
 
     @OneToOne(mappedBy = "members")
-    @JoinColumn(name = "subscriptions_id")
     private Subscriptions subscriptions;
 
     public void addSchedulesIO(SchedulesIO schedulesIO) {
         this.schedulesIO.add(schedulesIO);
     }
-
-
 
 }
 
