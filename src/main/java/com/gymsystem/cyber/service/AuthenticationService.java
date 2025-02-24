@@ -11,6 +11,7 @@ import com.gymsystem.cyber.exception.AuthException;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
@@ -20,11 +21,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
@@ -287,6 +291,33 @@ public class AuthenticationService implements IAuthentication {
         });
     }
 
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Override
+    public CompletableFuture<ResponseObject> GetAll() {
+        List<User> users = authenticationRepository.findAll();
+        List<UserRespone> accountResponses = new ArrayList<>();
+        for (User user : users){
+            accountResponses.add(UserRespone.builder()
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .role(user.getRole())
+                    .phone(user.getPhone())
+                    .id(user.getId())
+                    .enable(user.isEnable())
+                    .plan(user.getMembers().getSubscriptions().getMemberShipPlans().getName())
+                    .build());
+        }
+
+        return CompletableFuture.supplyAsync(() -> {
+            return ResponseObject.builder()
+                    .httpStatus(HttpStatus.OK)
+                    .data(accountResponses)
+                    .message("Get all successfully!")
+                    .build();
+        });
+
+    }
+
     @Transactional
     @Override
     @Async
@@ -336,4 +367,5 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
 }

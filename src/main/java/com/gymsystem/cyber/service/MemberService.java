@@ -81,7 +81,7 @@ public class MemberService implements iMember {
 
         List<SchedulesIO> schedulesIO = new ArrayList<>();
         int daysBetween = (int) ChronoUnit.DAYS.between(members.getDateTime(), members.getExpireDate());
-        for (int i = 1 ; i <= daysBetween; i++){
+        for (int i = 0 ; i <= daysBetween; i++){
             schedulesIO.add(SchedulesIO.builder()
                     .id(UUID.randomUUID().toString())
                         .members(members)
@@ -122,7 +122,6 @@ public class MemberService implements iMember {
                             .date(schedulesIO.getDate())
                             .plans(schedulesIO.getMembers().getSubscriptions().getMemberShipPlans().getName())
                             .build());
-
                 }
         }
         return ResponseObject.builder()

@@ -113,7 +113,7 @@ public class TrainerService implements ITrainerService {
                     .experience_year(Math.max(trainerRequest.getExperienceYear(), 0))
                     .user(user)
                     .specialization(trainerRequest.getSpecialization())
-                    .build();
+                    .locked(false).build();
 
             trainerRepository.saveAndFlush(trainer);
 

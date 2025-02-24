@@ -96,4 +96,9 @@ public class AuthenticationController {
         System.out.println(googleLoginRequest);
         return authenticationService.loginByGoogle(googleLoginRequest);
     }
+
+    @GetMapping("/get-all")
+    public CompletableFuture<ResponseObject> getAll() {
+        return authenticationService.GetAll();
+    }
 }
