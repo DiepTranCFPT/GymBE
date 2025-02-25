@@ -3,7 +3,7 @@ package com.gymsystem.cyber.model.Response;
 import com.gymsystem.cyber.enums.UserRole;
 import lombok.Builder;
 import lombok.Data;
-import org.bytedeco.opencv.presets.opencv_core;
+
 @Data
 @Builder
 public class UserRespone {

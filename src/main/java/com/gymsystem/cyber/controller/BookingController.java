@@ -5,22 +5,31 @@ package com.gymsystem.cyber.controller;
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
 import com.gymsystem.cyber.model.ResponseObject;
-import com.gymsystem.cyber.utils.AccountUtils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/booking")
 public class BookingController {
+
+    @Autowired SimpMessagingTemplate messagingTemplate;
+
    private final iMember memberService;
-
-
-    public BookingController(iMember memberService, AccountUtils accountUtils) {
+   public BookingController(iMember memberService) {
         this.memberService = memberService;
-
     }
     @PostMapping
     public ResponseObject registerMember(@RequestBody MemberRegistrationRequest member){
-        return memberService.registerMember(member);
+        ResponseObject responseObject = memberService.registerMember(member);
+
+        if(responseObject.getMessage().equals("register successfully!")){
+            messagingTemplate.convertAndSend("/topic/notifications/" ,"Đăng ký thành công!");
+        }else {
+            messagingTemplate.convertAndSend("/topic/notifications", "Đăng ký thất bại!");
+        }
+        return responseObject;
     }
     @GetMapping
     public ResponseObject getMember(){
