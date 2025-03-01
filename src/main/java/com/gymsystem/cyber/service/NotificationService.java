@@ -23,9 +23,9 @@ public class NotificationService implements INotify {
 
     @Override
     public void saveNotifacation(NotificationRequest notificationRequest) {
+
         Optional<User> user = authenticationRepository.findById(notificationRequest.getId());
         Notifications notifications = Notifications.builder()
-                .id(notificationRequest.getId())
                 .user(user.get())
                 .status(notificationRequest.getStatus())
                 .createAt(notificationRequest.getCreateAt())
