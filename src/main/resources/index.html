@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Notification Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+
+<h1>WebSocket Notification</h1>
+<div id="messages">nhap</div>
+<button id="sendNotification">Send Test Notification</button>
+
+<script>
+    // Kết nối tới WebSocket
+    var socket = new SockJS('http://localhost:8080/ws');  // Đảm bảo sử dụng đúng URL của server Spring Boot
+    var stompClient = Stomp.over(socket);
+
+
+    // Subscribe vào topic để nhận thông báo
+    // Example of connecting and subscribing to a topic
+
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/topic/notifications/' + notificationId, function(messageOutput) {
+            console.log("Received message: " + messageOutput.body);
+        });
+    });
+
+
+    // Hiển thị thông báo lên UI
+    function showMessage(message) {
+        var messagesDiv = document.getElementById('messages');
+        var newMessage = document.createElement('div');
+        newMessage.appendChild(document.createTextNode(message));
+        messagesDiv.appendChild(newMessage);
+    }
+
+    // Gửi notification đến server khi nhấn nút
+    document.getElementById('sendNotification').addEventListener('click', function() {
+        var message = {
+            "id": "309afe09-024d-49ed-baeb-573c9a8ee4c8",
+            "status": "check",
+            "createAt": "diep"
+        };
+
+        fetch('http://localhost:8080/api/notifications/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message) // Sending the JSON with 'id'
+        })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+    });
+
+
+</script>
+</body>
+</html>

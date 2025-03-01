@@ -49,7 +49,8 @@ public class SecurityConfig {
             "/api/trainers/**",
             "/api/authen/firebase-login",
             "/login/oauth2/code/google",
-            "/"
+            "/api/notifications/**",
+            "/ws/info"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
