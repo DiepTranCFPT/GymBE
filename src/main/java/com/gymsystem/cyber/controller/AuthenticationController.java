@@ -5,8 +5,11 @@ import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
+import com.gymsystem.cyber.model.Response.AccountResponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.model.Request.LoginRequest;
+import com.gymsystem.cyber.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -98,5 +101,14 @@ public class AuthenticationController {
     @GetMapping("/get-all")
     public CompletableFuture<ResponseObject> getAll() {
         return authenticationService.GetAll();
+    }
+
+    @PostMapping("/edit")
+    public String edit(UserRespone userRespone){
+        return authenticationService.edit(userRespone);
+    }
+    @PostMapping("/delete")
+    public String delete(String id){
+        return authenticationService.delete(id);
     }
 }

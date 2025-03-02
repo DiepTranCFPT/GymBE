@@ -5,6 +5,7 @@ import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import com.gymsystem.cyber.model.Response.AccountResponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -19,6 +20,10 @@ public interface IAuthentication {
     CompletableFuture<ResponseObject> Oath (String token) throws FirebaseAuthException;
 
     CompletableFuture<ResponseObject> GetAll ();
+
+    String edit (UserRespone userRespone);
+    String delete (String id);
+
 
 
 //    CompletableFuture<ResponseObject> registerFaceId(String idUser, byte[] face);

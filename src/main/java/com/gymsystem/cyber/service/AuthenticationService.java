@@ -14,6 +14,7 @@ import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
+import com.gymsystem.cyber.repository.MembershipPlansRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
@@ -47,6 +49,8 @@ public class AuthenticationService implements IAuthentication {
 
     private final TrainerRepository trainerRepository;
 
+    private final MembershipPlansRepository membershipPlansRepository;
+
 
 //    private final AccountUtils accountUtils;
 
@@ -56,7 +60,7 @@ public class AuthenticationService implements IAuthentication {
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
                                  PasswordEncoder passwordEncoder,
-                                 TrainerRepository trainerRepository
+                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository
 //            ,AccountUtils accountUtils
 
     ) {
@@ -66,6 +70,7 @@ public class AuthenticationService implements IAuthentication {
         this.trainerRepository = trainerRepository;
 //        this.accountUtils = accountUtils;
 
+        this.membershipPlansRepository = membershipPlansRepository;
     }
 
 
@@ -138,6 +143,8 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
+
 
 
 //    public User registerStaff(RegisterRequest registerRequest) {
@@ -271,9 +278,7 @@ public class AuthenticationService implements IAuthentication {
                         .name(firebaseToken.getName())
                         .role(UserRole.USER)
                         .enable(true).deleted(false).build();
-
                 authenticationRepository.saveAndFlush(newUser);
-
                 return ResponseObject.builder()
                         .httpStatus(HttpStatus.OK)
                         .data(LoginReponse.builder()
@@ -319,6 +324,29 @@ public class AuthenticationService implements IAuthentication {
                 .data(accountResponses)
                 .message("Get all successfully!")
                 .build());
+    }
+
+    @Override
+    public String edit(UserRespone userRespone) {
+        Optional<User> user = authenticationRepository.findById(userRespone.getId());
+
+        user.get().builder()
+                .name(userRespone.getName())
+                .email(userRespone.getEmail())
+                .phone(userRespone.getPhone())
+                .enable(userRespone.isEnable())
+                .role(userRespone.getRole())
+                .build();
+
+        authenticationRepository.save(user.get());
+        return "Success";
+    }
+
+    @Override
+    public String delete(String id) {
+        Optional<User> user = authenticationRepository.findById(id);
+        user.get().setEnable(false);
+        return "Success";
     }
 
 
@@ -371,5 +399,6 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
 
 }

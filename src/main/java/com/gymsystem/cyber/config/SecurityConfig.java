@@ -84,7 +84,7 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).hasRole("ADMIN")
+                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())

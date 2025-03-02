@@ -63,5 +63,5 @@ public class User extends BaseEntity {
     private byte[] avata;
 
     @OneToOne(mappedBy = "user")
-    private Members members;
+    public Members members;
 }
