@@ -104,11 +104,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/edit")
-    public String edit(UserRespone userRespone){
+    public String edit(@RequestBody  UserRespone userRespone){
         return authenticationService.edit(userRespone);
     }
     @PostMapping("/delete")
-    public String delete(String id){
+    public String delete(@RequestParam String id){
         return authenticationService.delete(id);
     }
 }
