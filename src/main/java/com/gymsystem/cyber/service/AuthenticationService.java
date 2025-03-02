@@ -25,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.security.auth.login.AccountNotFoundException;
@@ -327,17 +328,15 @@ public class AuthenticationService implements IAuthentication {
     }
 
     @Override
-    public String edit(UserRespone userRespone) throws AccountNotFoundException {
-      User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
-        user.builder()
-                .name(userRespone.getName())
-                .email(userRespone.getEmail())
-                .phone(userRespone.getPhone())
-                .enable(userRespone.isEnable())
-                .role(userRespone.getRole())
-                .build();
-
-        authenticationRepository.save(user);
+    @Transactional(rollbackFor = Exception.class)
+    public String edit(String id ,UserRespone userRespone) throws AccountNotFoundException {
+      User user = authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        user.setName(userRespone.getName());
+        user.setEmail(userRespone.getEmail());
+        user.setPhone(userRespone.getPhone());
+        user.setEnable(userRespone.isEnable());
+        user.setRole(userRespone.getRole());
+        authenticationRepository.saveAndFlush(user);
         return "Success";
     }
 
@@ -345,12 +344,9 @@ public class AuthenticationService implements IAuthentication {
     public String delete(String id) throws AccountNotFoundException {
         User user = authenticationRepository.findById(id) .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));;
         user.setEnable(false);
-        authenticationRepository.save(user);
-
+        authenticationRepository.saveAndFlush(user);
         return "Success";
     }
-
-
     @Transactional
     @Override
     @Async
