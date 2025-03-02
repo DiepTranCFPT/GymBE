@@ -21,8 +21,8 @@ public interface IAuthentication {
 
     CompletableFuture<ResponseObject> GetAll ();
 
-    String edit (UserRespone userRespone);
-    String delete (String id);
+    String edit (UserRespone userRespone) throws AccountNotFoundException;
+    String delete (String id) throws AccountNotFoundException;
 
 
 

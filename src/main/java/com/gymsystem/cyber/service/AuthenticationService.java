@@ -327,10 +327,9 @@ public class AuthenticationService implements IAuthentication {
     }
 
     @Override
-    public String edit(UserRespone userRespone) {
-        Optional<User> user = authenticationRepository.findById(userRespone.getId());
-
-        user.get().builder()
+    public String edit(UserRespone userRespone) throws AccountNotFoundException {
+      User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        user.builder()
                 .name(userRespone.getName())
                 .email(userRespone.getEmail())
                 .phone(userRespone.getPhone())
@@ -338,14 +337,16 @@ public class AuthenticationService implements IAuthentication {
                 .role(userRespone.getRole())
                 .build();
 
-        authenticationRepository.save(user.get());
+        authenticationRepository.save(user);
         return "Success";
     }
 
     @Override
-    public String delete(String id) {
-        Optional<User> user = authenticationRepository.findById(id);
-        user.get().setEnable(false);
+    public String delete(String id) throws AccountNotFoundException {
+        User user = authenticationRepository.findById(id) .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));;
+        user.setEnable(false);
+        authenticationRepository.save(user);
+
         return "Success";
     }
 
