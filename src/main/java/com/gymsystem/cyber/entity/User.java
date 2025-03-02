@@ -64,6 +64,4 @@ public class User extends BaseEntity {
 
     @OneToOne(mappedBy = "user")
     private Members members;
-
-
 }

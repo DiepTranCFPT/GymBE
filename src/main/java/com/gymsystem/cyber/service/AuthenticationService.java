@@ -296,7 +296,13 @@ public class AuthenticationService implements IAuthentication {
     public CompletableFuture<ResponseObject> GetAll() {
         List<User> users = authenticationRepository.findAll();
         List<UserRespone> accountResponses = new ArrayList<>();
-        for (User user : users){
+
+        for (User user : users) {
+            String planName = "No Plan";
+
+            if(user.getMembers() != null)
+                planName = user.getMembers().getSubscriptions().getMemberShipPlans().getName();
+
             accountResponses.add(UserRespone.builder()
                     .email(user.getEmail())
                     .name(user.getName())
@@ -304,19 +310,17 @@ public class AuthenticationService implements IAuthentication {
                     .phone(user.getPhone())
                     .id(user.getId())
                     .enable(user.isEnable())
-                    .plan(user.getMembers().getSubscriptions().getMemberShipPlans().getName())
+                    .plan(planName)
                     .build());
         }
 
-        return CompletableFuture.supplyAsync(() -> {
-            return ResponseObject.builder()
-                    .httpStatus(HttpStatus.OK)
-                    .data(accountResponses)
-                    .message("Get all successfully!")
-                    .build();
-        });
-
+        return CompletableFuture.supplyAsync(() -> ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .data(accountResponses)
+                .message("Get all successfully!")
+                .build());
     }
+
 
     @Transactional
     @Override

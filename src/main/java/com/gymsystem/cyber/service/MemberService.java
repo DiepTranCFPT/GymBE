@@ -100,7 +100,6 @@ public class MemberService implements iMember {
                     .data(false)
                     .build();
         }
-
         return ResponseObject.builder()
                     .httpStatus(HttpStatus.OK)
                     .message("register successfully!")
@@ -110,7 +109,6 @@ public class MemberService implements iMember {
 
     @Override
     public ResponseObject getAllMembers() {
-
         List<SchedulesIO> schedulesIOS = scheduleIORepository.findAll();
         List<BookingRespone> bookingRespones = new ArrayList<>();
         for (SchedulesIO schedulesIO : schedulesIOS){
