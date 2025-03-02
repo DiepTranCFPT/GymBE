@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public interface IMemberShipPlans {
-
     CompletableFuture<ResponseObject> getMembershipPlans();
     CompletableFuture<ResponseObject> getMembershipPlan(String name);
     CompletableFuture<ResponseObject> addMembershipPlan(PlansRequest plansRequest);
