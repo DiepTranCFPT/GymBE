@@ -55,8 +55,6 @@ public class AuthenticationService implements IAuthentication {
 
 //    private final AccountUtils accountUtils;
 
-
-
     @Autowired
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
@@ -69,12 +67,8 @@ public class AuthenticationService implements IAuthentication {
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
-//        this.accountUtils = accountUtils;
-
         this.membershipPlansRepository = membershipPlansRepository;
     }
-
-
     @Override
     @Async
     @Transactional
@@ -329,8 +323,8 @@ public class AuthenticationService implements IAuthentication {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String edit(String id ,UserRespone userRespone) throws AccountNotFoundException {
-      User user = authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+    public String edit(UserRespone userRespone) throws AccountNotFoundException {
+      User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
         user.setName(userRespone.getName());
         user.setEmail(userRespone.getEmail());
         user.setPhone(userRespone.getPhone());
