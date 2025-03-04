@@ -6,6 +6,7 @@ import lombok.Data;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 import jakarta.persistence.Entity;
@@ -40,7 +41,7 @@ public class MemberShipPlans {
 
     private boolean isActive;
 
-    @OneToOne(mappedBy = "memberShipPlans")
-    private Subscriptions subscriptions;
+    @OneToMany(mappedBy = "memberShipPlans")
+    private List<Subscriptions> subscriptions;
 
 }
