@@ -41,7 +41,7 @@ public class MemberShipPlans {
 
     private boolean isActive;
 
-    @OneToMany(mappedBy = "memberShipPlans")
+    @OneToMany(mappedBy = "memberShipPlans",fetch = FetchType.EAGER)
     private List<Subscriptions> subscriptions;
 
 }
