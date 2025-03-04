@@ -8,6 +8,7 @@ import com.gymsystem.cyber.repository.MembershipPlansRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,7 +24,22 @@ public class MembershipPlanService implements IMemberShipPlans {
     @Override
     public CompletableFuture<ResponseObject> getMembershipPlans() {
         List<MemberShipPlans> memberShipPlans = membershipPlansRepository.findAll();
-        return CompletableFuture.completedFuture(new ResponseObject("Success", HttpStatus.OK, memberShipPlans));
+
+        List<PlansRequest> plansRequests = new ArrayList<>();
+
+        for(MemberShipPlans check : memberShipPlans){
+            PlansRequest plansRequest = new PlansRequest();
+
+            plansRequest.setName(check.getName());
+            plansRequest.setDescription(check.getDescription());
+            plansRequest.setPrice(check.getPrice());
+            plansRequest.setEndDate(check.getEndDate());
+            plansRequest.setStartedDate(check.getStartDate());
+
+            plansRequests.add(plansRequest);
+        }
+
+        return CompletableFuture.completedFuture(new ResponseObject("Success", HttpStatus.OK, plansRequests));
     }
 
     @Override
