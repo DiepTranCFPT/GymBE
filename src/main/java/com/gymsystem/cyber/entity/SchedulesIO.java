@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
+
+import org.springframework.cglib.core.Local;
 import org.springframework.data.relational.core.mapping.Table;
 
 @SuperBuilder
@@ -31,7 +33,9 @@ public class SchedulesIO {
 
     private LocalDateTime date;
 
-    private int time;
+    private LocalDateTime timeCheckin;
+
+    private LocalDateTime timeCheckout;
 
     private String activity;
 

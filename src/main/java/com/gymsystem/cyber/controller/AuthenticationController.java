@@ -103,12 +103,12 @@ public class AuthenticationController {
         return authenticationService.GetAll();
     }
 
-    @PostMapping("/edit")
+    @PutMapping("/edit")
     public String edit(@RequestBody UserRespone userRespone) throws AccountNotFoundException {
         return authenticationService.edit(userRespone);
     }
 
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public String delete(@RequestParam String id) throws AccountNotFoundException {
         return authenticationService.delete(id);
     }

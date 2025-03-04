@@ -19,13 +19,13 @@ public class FirebaseInitializer {
 
     @Bean
     public FirebaseAuth firebaseAuth() throws IOException {
-        InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
-
-        FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
-                .build();
-
-        FirebaseApp.initializeApp(options);
+        if (FirebaseApp.getApps().isEmpty()) {
+            InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+            FirebaseApp.initializeApp(options);
+        }
         return FirebaseAuth.getInstance();
     }
 }
