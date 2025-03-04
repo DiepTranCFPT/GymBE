@@ -24,7 +24,7 @@ public class Subscriptions {
     @JoinColumn(name = "member_id")
     private Members members;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "plan_id")
     private MemberShipPlans memberShipPlans;
 

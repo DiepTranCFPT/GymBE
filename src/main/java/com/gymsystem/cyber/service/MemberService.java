@@ -40,6 +40,8 @@ public class MemberService implements iMember {
     @Transactional
     public ResponseObject registerMember(MemberRegistrationRequest member) {
         User user = accountUtils.getCurrentUser();
+        MemberShipPlans memberShipPlans = membershipPlansRepository.findByName(member.getName());
+
         if (user.getMembers() != null) {
             {
                 return ResponseObject.builder()
@@ -56,6 +58,14 @@ public class MemberService implements iMember {
                         .data(false)
                         .build();
         }
+        if (subscriptionsRepository.existsByMembersAndMemberShipPlans(user.getMembers(),memberShipPlans)) {
+            return ResponseObject.builder()
+                    .httpStatus(HttpStatus.BAD_REQUEST)
+                    .message("You have already registered for this membership plan.")
+                    .data(false)
+                    .build();
+        }
+
         Payment payment = Payment.builder()
                     .amount(membershipPlansRepository.findByName(member.getName()).getPrice())
                     .status(false)
@@ -71,9 +81,8 @@ public class MemberService implements iMember {
                     .user(user)
                     .exprire(false).build();
         memberRepository.save(members);
-
         Subscriptions subscriptions =  Subscriptions.builder()
-                .memberShipPlans(membershipPlansRepository.findByName(member.getName()))
+                .memberShipPlans(memberShipPlans)
                 .payment(payment)
                 .members(members)
                 .build();
@@ -106,7 +115,6 @@ public class MemberService implements iMember {
                     .data(true)
                     .build();
     }
-
     @Override
     public ResponseObject getAllMembers() {
         List<SchedulesIO> schedulesIOS = scheduleIORepository.findAll();
