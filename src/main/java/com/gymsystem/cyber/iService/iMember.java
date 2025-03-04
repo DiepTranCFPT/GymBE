@@ -1,7 +1,10 @@
 package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
+import com.gymsystem.cyber.model.Request.PTforUserRequest;
 import com.gymsystem.cyber.model.ResponseObject;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 
 public interface iMember {
@@ -9,4 +12,6 @@ public interface iMember {
     ResponseObject registerMember(MemberRegistrationRequest member);
 
     ResponseObject getAllMembers();
+
+    ResponseObject regisPTForUser(PTforUserRequest pTforUserRequest) throws AccountNotFoundException;
 }

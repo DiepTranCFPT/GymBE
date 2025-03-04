@@ -1,9 +1,12 @@
 package com.gymsystem.cyber.repository;
 
+import com.gymsystem.cyber.entity.Members;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String> {
+import java.util.List;
 
+public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String> {
+        List<SchedulesIO> findByMembers(Members members);
 
 }
