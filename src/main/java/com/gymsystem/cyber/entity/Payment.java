@@ -16,7 +16,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table("payment")
+@Table(name = "payment")
 public class Payment {
 
     @Id

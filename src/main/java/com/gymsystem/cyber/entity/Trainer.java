@@ -17,7 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Entity
 @SuperBuilder
-@Table("trainer")
+@Table(name = "trainer")
 public class Trainer {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
