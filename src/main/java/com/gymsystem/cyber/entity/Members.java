@@ -22,7 +22,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 @Entity
 @SuperBuilder
-@Table("members")
+@Table(name = "members")
 public class Members {
 
     @Id

@@ -19,7 +19,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @Entity
-@Table("membership_plans")
+@Table(name = "membership_plans")
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor

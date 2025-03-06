@@ -17,7 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table("schedules_io")
+@Table(name = "schedules_io")
 public class SchedulesIO {
 
     @Id

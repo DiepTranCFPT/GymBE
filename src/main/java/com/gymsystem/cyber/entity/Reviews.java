@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Entity
-@Table("reviews")
+@Table(name = "reviews")
 public class Reviews {
 
     @Id

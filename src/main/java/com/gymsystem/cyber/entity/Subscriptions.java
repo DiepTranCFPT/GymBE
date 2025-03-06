@@ -13,7 +13,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table("subscriptions")
+@Table(name = "subscriptions")
 public class Subscriptions {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
