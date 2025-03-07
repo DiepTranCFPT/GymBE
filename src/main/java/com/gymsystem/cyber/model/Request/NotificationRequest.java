@@ -14,6 +14,5 @@ public class NotificationRequest {
     @NotNull("Creation date must not be null")
     private String createAt;
 
-    // Getters and setters
 }
 
