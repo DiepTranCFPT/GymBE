@@ -1,6 +1,8 @@
 package com.gymsystem.cyber.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
@@ -14,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.data.relational.core.mapping.Table;
 
 
@@ -31,28 +34,30 @@ public class Members {
 
     @OneToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @NotNull
-    private String name ;
+    private String name;
 
     private String decription;
 
     @DecimalMin(value = "0.0", message = "Price must be greater than or equal to 0")
-    private Double price ;
+    private Double price;
 
-    @Min(value = 1,message = "Duration must be greater than or equal to 1")
+    @Min(value = 1, message = "Duration must be greater than or equal to 1")
     private Integer duration;
 
-    private LocalDateTime dateTime ;
+    private LocalDateTime dateTime;
 
     private LocalDateTime expireDate;
 
-    private boolean exprire ;
+    private boolean exprire;
 
-    @OneToMany(mappedBy = "members",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "members", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<SchedulesIO> schedulesIO;
-
+    
     @OneToOne(mappedBy = "members")
     private Subscriptions subscriptions;
 

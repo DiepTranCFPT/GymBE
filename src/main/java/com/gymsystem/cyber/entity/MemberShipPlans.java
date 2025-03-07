@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,13 +36,16 @@ public class MemberShipPlans {
 
     private Double price;
 
-    private LocalDateTime startDate;
+    private LocalDateTime startDate = LocalDate.now().atTime(6, 0);
 
-    private LocalDateTime endDate;
+    private LocalDateTime endDate = LocalDate.now().atTime(6, 0);
 
     private boolean isActive;
 
-    @OneToMany(mappedBy = "memberShipPlans",fetch = FetchType.EAGER)
+    // thoi gia toi da cua 1 service (tuy loai co tg khac nhau)
+    private int timeInDay;
+
+    @OneToMany(mappedBy = "memberShipPlans", fetch = FetchType.EAGER)
     private List<Subscriptions> subscriptions;
 
 }
