@@ -71,7 +71,6 @@ public class MemberService implements iMember {
                     .data(false)
                     .build();
         }
-
         Payment payment = Payment.builder()
                     .amount(membershipPlansRepository.findByName(member.getName()).getPrice())
                     .status(false)
@@ -144,17 +143,28 @@ public class MemberService implements iMember {
 
     @Override
     public ResponseObject regisPTForUser(PTforUserRequest pTforUserRequest) throws AccountNotFoundException {
+        // Find the user by ID, throw exception if not found
+        User user = authenticationRepository.findById(pTforUserRequest.getIdUser())
+                .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
 
-        User user = authenticationRepository.findById(pTforUserRequest.getIdUser()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
-        List<SchedulesIO> list =  scheduleIORepository.findByMembers(user.getMembers());
-        Trainer trainer = trainerRepository.findById(pTforUserRequest.getIdTrainer()).orElseThrow(()-> new RuntimeException("Trainer Not Found"));
-        for (SchedulesIO schedulesIO : list){
-            schedulesIO.setTrainer(trainer);
-            scheduleIORepository.save(schedulesIO);
-        }
+        // Get the list of schedules associated with the user
+        List<SchedulesIO> list = scheduleIORepository.findByMembers(user.getMembers());
+
+        // Find the trainer by ID, throw exception if not found
+        Trainer trainer = trainerRepository.findById(pTforUserRequest.getIdTrainer())
+                .orElseThrow(() -> new AccountNotFoundException("Trainer Not Found"));
+
+        // Update all schedules with the new trainer
+        list.forEach(schedulesIO -> schedulesIO.setTrainer(trainer));
+
+        // Save all updated schedules in one batch
+        scheduleIORepository.saveAll(list);
+
+        // Return a success response
         return ResponseObject.builder()
                 .httpStatus(HttpStatus.OK)
-                .message("RegisPT "+trainer.getUser().getName()+" Success")
+                .message("RegisPT " + trainer.getUser().getName() + " Success")
                 .build();
     }
+
 }
