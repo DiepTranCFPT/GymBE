@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class NotificationRequest {
-    @NotNull( "ID must not be null")
+    @NotNull("ID must not be null")
     private String id;
 
     @NotNull("Status must not be null")

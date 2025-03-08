@@ -2,6 +2,7 @@ package com.gymsystem.cyber.service;
 
 
 import com.gymsystem.cyber.entity.User;
+import com.gymsystem.cyber.enums.TypeEdit;
 import com.gymsystem.cyber.enums.UserRole;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -28,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
-
 
 
 @Service
@@ -69,6 +70,7 @@ public class AuthenticationService implements IAuthentication {
         this.trainerRepository = trainerRepository;
         this.membershipPlansRepository = membershipPlansRepository;
     }
+
     @Override
     @Async
     @Transactional
@@ -128,7 +130,6 @@ public class AuthenticationService implements IAuthentication {
                     .deleted(false).build();
 
 
-
             authenticationRepository.saveAndFlush(user);
 
             return ResponseObject.builder()
@@ -138,8 +139,6 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
-
-
 
 
 //    public User registerStaff(RegisterRequest registerRequest) {
@@ -232,7 +231,6 @@ public class AuthenticationService implements IAuthentication {
 //    }
 
 
-
     @Override
     public CompletableFuture<ResponseObject> Oath(String token) throws FirebaseAuthException {
         return CompletableFuture.supplyAsync(() -> {
@@ -300,7 +298,7 @@ public class AuthenticationService implements IAuthentication {
         for (User user : users) {
             String planName = "No Plan";
 
-            if(user.getMembers() != null)
+            if (user.getMembers() != null)
                 planName = user.getMembers().getSubscriptions().getMemberShipPlans().getName();
 
             accountResponses.add(UserRespone.builder()
@@ -324,7 +322,7 @@ public class AuthenticationService implements IAuthentication {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String edit(UserRespone userRespone) throws AccountNotFoundException {
-      User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
         user.setName(userRespone.getName());
         user.setEmail(userRespone.getEmail());
         user.setPhone(userRespone.getPhone());
@@ -336,11 +334,54 @@ public class AuthenticationService implements IAuthentication {
 
     @Override
     public String delete(String id) throws AccountNotFoundException {
-        User user = authenticationRepository.findById(id) .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));;
+        User user = authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        ;
         user.setEnable(false);
         authenticationRepository.saveAndFlush(user);
         return "Success";
     }
+
+    @Override
+    @Transactional
+    @Async
+    public CompletableFuture<ResponseObject> EditProfile(String id, TypeEdit tyfilterEditInformationpeEdit, String content) {
+        return CompletableFuture.supplyAsync(() -> {
+            ResponseObject responseObject = ResponseObject.builder().httpStatus(HttpStatus.OK).build();
+            User user = authenticationRepository.findById(id).map(user1 -> {
+                if (user1.isDeleted()) throw new RuntimeException("Account deleted");
+                if (!user1.isEnable()) throw new RuntimeException("Account not enabled");
+                return user1;
+            }).orElse(null);
+            if (user == null) {
+                new AccountNotFoundException("Account does not exist");
+            }
+            switch (tyfilterEditInformationpeEdit) {
+                case Name -> {
+                    if (user.getName().equals(content)) {
+                        responseObject.setMessage("Name not change");
+                    } else {
+                        user.setName(content);
+                        authenticationRepository.saveAndFlush(user);
+                        responseObject.setMessage("Update successfully");
+                    }
+                }
+                case Phone -> {
+                    if (user.getPhone() == null || user.getPhone().isEmpty() || !user.getPhone().equals(content)) {
+                        user.setPhone(content);
+                        authenticationRepository.saveAndFlush(user);
+                        responseObject.setMessage("Update successfully");
+                    } else if (user.getPhone().equals(content)) {
+                        responseObject.setMessage("Phone not change");
+                    }
+                }
+                default -> {
+                    responseObject.setMessage("Not Update");
+                }
+            }
+            return responseObject;
+        });
+    }
+
     @Transactional
     @Override
     @Async

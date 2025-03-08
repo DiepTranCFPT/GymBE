@@ -1,6 +1,7 @@
 package com.gymsystem.cyber.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
+import com.gymsystem.cyber.enums.TypeEdit;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
@@ -113,6 +114,13 @@ public class AuthenticationController {
     @PutMapping("/edit")
     public String edit(@RequestBody UserRespone userRespone) throws AccountNotFoundException {
         return authenticationService.edit(userRespone);
+    }
+
+
+    @PostMapping("/edit-profile/{id}/{type}")
+    @Operation(summary = "chinh sua thong tin nguoi dung voi id , typeEdit la Phone hoat la ten, content la noi dung muon chinh sua")
+    public CompletableFuture<ResponseObject> edit(@PathVariable("id") String id, @PathVariable("type") TypeEdit typeEdit, String content) {
+        return authenticationService.EditProfile(id, typeEdit, content);
     }
 
     @DeleteMapping("/delete")

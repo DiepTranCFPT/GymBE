@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptonRepository extends JpaRepository<Subscriptions, String> {
     Subscriptions findByMembers(Members members);
+
     boolean existsByMembersAndMemberShipPlans(Members members, MemberShipPlans memberShipPlans);
 
 }

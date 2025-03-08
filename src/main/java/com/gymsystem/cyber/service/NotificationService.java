@@ -14,7 +14,7 @@ import java.util.Optional;
 public class NotificationService implements INotify {
 
     private final NotificationsRepository notificationsRepository;
-    private final AuthenticationRepository  authenticationRepository;
+    private final AuthenticationRepository authenticationRepository;
 
     public NotificationService(NotificationsRepository notificationsRepository, AuthenticationRepository authenticationRepository) {
         this.notificationsRepository = notificationsRepository;
