@@ -1,9 +1,10 @@
 package com.gymsystem.cyber.controller;
 
-import com.gymsystem.cyber.IService.IAuthentication;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.gymsystem.cyber.iService.IAuthentication;
+import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
-import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,17 +12,21 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.security.auth.login.AccountNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
 @Controller
 @RestController
 @SecurityRequirement(name = "bearerAuth")
@@ -31,10 +36,12 @@ import java.util.concurrent.CompletableFuture;
 public class AuthenticationController {
 
     private final IAuthentication authenticationService;
+    private final IFaceRecodeService iFaceRecodeService;
 
     @Autowired
-    public AuthenticationController(IAuthentication authenticationService) {
+    public AuthenticationController(IAuthentication authenticationService, IFaceRecodeService iFaceRecodeService) {
         this.authenticationService = authenticationService;
+        this.iFaceRecodeService = iFaceRecodeService;
     }
 
 
@@ -50,11 +57,24 @@ public class AuthenticationController {
     public CompletableFuture<ResponseObject> loginAccount(@RequestBody LoginRequest loginRequest) {
         return authenticationService.login(loginRequest);
     }
-    @GetMapping("/test/login")
-    @Operation(summary = "đang nhap (moi quyen)")
-    public String login() {
-        return "custom_login";
+
+
+    @PostMapping("/firebase-login")
+    public CompletableFuture<ResponseObject> firebaseLogin(@RequestBody Map<String, String> request) throws FirebaseAuthException {
+        String token = request.get("token");
+        System.out.println(token);
+        return authenticationService.Oath(token);
     }
+
+    @PostMapping(value = "{id}/register-faceid", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "Đăng ký người dùng với faceid", description = "Đăng ký một người dùng mới với faceid.")
+    public CompletableFuture<ResponseObject> registerFaceId(@PathVariable("id") String id,
+                                                            @RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
+        return iFaceRecodeService.regisFaceIDforAccount(id, file);
+    }
+
     @GetMapping("/profile")
     @Operation(summary = "đang nhap (moi quyen)")
     public String profile(OAuth2AuthenticationToken token, Model model) {
@@ -64,6 +84,7 @@ public class AuthenticationController {
         System.out.println("token.getPrincipal().getAttribute()");
         return "user-profile";
     }
+
     @GetMapping("/signup-with-google")
     @Operation(summary = "đang nhap (moi quyen)")
     public CompletableFuture<ResponseObject> signupWithGoogle(OAuth2AuthenticationToken authenticationToken) throws AccountNotFoundException {
@@ -73,6 +94,11 @@ public class AuthenticationController {
         googleLoginRequest.setName((String) attributes.get("name"));
         System.out.println("hihihihihi");
         System.out.println(googleLoginRequest);
-       return authenticationService.loginByGoogle(googleLoginRequest);
+        return authenticationService.loginByGoogle(googleLoginRequest);
+    }
+
+    @GetMapping("/get-all")
+    public CompletableFuture<ResponseObject> getAll() {
+        return authenticationService.GetAll();
     }
 }

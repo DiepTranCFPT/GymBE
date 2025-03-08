@@ -29,3 +29,4 @@ public class CustomJwtGrantedAuthoritiesConverter implements Converter<Jwt, Coll
     }
 
 }
+

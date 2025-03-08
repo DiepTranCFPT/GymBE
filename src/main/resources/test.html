@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Google</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #userInfo {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        #userAvatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #errorMsg {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h2>Đăng nhập bằng Google</h2>
+<button id="loginGoogle">Đăng nhập với Google</button>
+
+<div id="userInfo"></div>
+<img id="userAvatar" alt="Avatar người dùng">
+<p id="errorMsg"></p>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Cấu hình Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCkdFWkQIegh-wpDairn8oVXzH9B_MC_Qo",
+        authDomain: "cyber-eae3c.firebaseapp.com",
+        projectId: "cyber-eae3c",
+        storageBucket: "cyber-eae3c.firebasestorage.app",
+        messagingSenderId: "1062171005115",
+        appId: "1:1062171005115:web:a5af8d1643e2c7f24ad99e",
+        measurementId: "G-3SZPBMX1H2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginButton = document.getElementById("loginGoogle");
+    const userInfo = document.getElementById("userInfo");
+    const userAvatar = document.getElementById("userAvatar");
+    const errorMsg = document.getElementById("errorMsg");
+
+    loginButton.addEventListener("click", async () => {
+        loginButton.disabled = true; // Ngăn spam click
+        userInfo.innerHTML = "";
+        userAvatar.style.display = "none";
+        errorMsg.textContent = "";
+
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const idToken = await result.user.getIdToken();
+
+            // Gửi token đến server
+            const response = await fetch("http://localhost:8080/api/authen/firebase-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: idToken })
+            });
+
+            if (!response.ok) {
+                throw new Error("Đăng nhập thất bại, vui lòng thử lại.");
+            }
+
+            const data = await response.json();
+
+            // Hiển thị thông tin người dùng
+            userInfo.innerHTML = `
+                    <p><strong>ID:</strong> ${data.data.id}</p>
+                    <p><strong>Tên:</strong> ${data.data.name}</p>
+                    <p><strong>Email:</strong> ${data.data.email}</p>
+                    <p><strong>Số điện thoại:</strong> ${data.data.phone || "Chưa cập nhật"}</p>
+                `;
+
+            // Hiển thị avatar nếu có
+            if (data.data.avata) {
+                const imageUrl = `data:image/png;base64,${data.data.avata}`;
+                userAvatar.src = imageUrl;
+                userAvatar.style.display = "block";
+            }
+
+        } catch (error) {
+            errorMsg.textContent = error.message;
+        } finally {
+            loginButton.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
