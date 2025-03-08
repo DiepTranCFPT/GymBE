@@ -4,6 +4,7 @@ import com.gymsystem.cyber.entity.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -31,4 +32,5 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
 
     Optional<User> findByFirebaseUid(String firebase);
 
+    List<User> findByAvataIsNotNull();
 }

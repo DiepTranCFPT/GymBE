@@ -1,6 +1,8 @@
 package com.gymsystem.cyber.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.utils.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -63,5 +65,6 @@ public class User extends BaseEntity {
     private byte[] avata;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     public Members members;
 }

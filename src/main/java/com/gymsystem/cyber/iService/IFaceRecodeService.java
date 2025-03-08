@@ -10,4 +10,5 @@ public interface IFaceRecodeService {
 
     CompletableFuture<ResponseObject> regisFaceIDforAccount(String email, MultipartFile file) throws IOException;
 
+    CompletableFuture<ResponseObject> loginFaceID(MultipartFile file) throws IOException;
 }

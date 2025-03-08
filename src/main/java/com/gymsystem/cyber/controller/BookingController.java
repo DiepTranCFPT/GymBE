@@ -1,7 +1,6 @@
 package com.gymsystem.cyber.controller;
 
 
-
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
 import com.gymsystem.cyber.model.Request.PTforUserRequest;
@@ -17,30 +16,34 @@ import javax.security.auth.login.AccountNotFoundException;
 @RequestMapping("/booking")
 public class BookingController {
 
-    @Autowired SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    SimpMessagingTemplate messagingTemplate;
 
-   private final iMember memberService;
-   public BookingController(iMember memberService) {
+    private final iMember memberService;
+
+    public BookingController(iMember memberService) {
         this.memberService = memberService;
     }
+
     @PostMapping
-    public ResponseObject registerMember(@RequestBody MemberRegistrationRequest member){
+    public ResponseObject registerMember(@RequestBody MemberRegistrationRequest member) {
         ResponseObject responseObject = memberService.registerMember(member);
 
-        if(responseObject.getMessage().equals("register successfully!")){
-            messagingTemplate.convertAndSend("/topic/notifications/" ,"Đăng ký thành công!");
-        }else {
+        if (responseObject.getMessage().equals("register successfully!")) {
+            messagingTemplate.convertAndSend("/topic/notifications/", "Đăng ký thành công!");
+        } else {
             messagingTemplate.convertAndSend("/topic/notifications", "Đăng ký thất bại!");
         }
         return responseObject;
     }
+
     @GetMapping
-    public ResponseObject getMember(){
+    public ResponseObject getMember() {
         return memberService.getAllMembers();
     }
 
     @PostMapping("/Trainnerforuser")
-    public ResponseObject trainerforUser(@RequestBody  PTforUserRequest pTforUserRequest) throws AccountNotFoundException {
-       return memberService.regisPTForUser(pTforUserRequest);
+    public ResponseObject trainerforUser(@RequestBody PTforUserRequest pTforUserRequest) throws AccountNotFoundException {
+        return memberService.regisPTForUser(pTforUserRequest);
     }
 }

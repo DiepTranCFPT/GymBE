@@ -50,6 +50,9 @@ public class SecurityConfig {
             "/api/authen/firebase-login",
             "/login/oauth2/code/google",
             "/api/notifications/**",
+            "/api/authen/face-login/**",
+            "/api/authen/register-faceid/**",
+            "/api/authen/register/**",
             "/ws/info"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
@@ -58,8 +61,6 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/admin/register_PT",
             "/api/test/admin-api/**",
-            "/api/authen/register/**",
-            "/api/authen/{{id}}/register-faceid/**",
             "/api/trainers/**",
             "/"
     };

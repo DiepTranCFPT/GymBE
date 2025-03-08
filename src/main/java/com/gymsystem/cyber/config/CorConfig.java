@@ -17,4 +17,6 @@ public class CorConfig implements WebMvcConfigurer {
                 .allowedMethods("*")
                 .maxAge(1440000);
     }
+
+
 }
