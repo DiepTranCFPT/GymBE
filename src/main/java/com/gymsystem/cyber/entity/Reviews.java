@@ -30,7 +30,7 @@ public class Reviews {
 
     private String createAt;
 
-    @OneToMany(mappedBy = "reviews")
-    private List<SchedulesIO> schedulesIO;
+//    @OneToMany(mappedBy = "reviews")
+//    private List<SchedulesIO> schedulesIO;
 
 }

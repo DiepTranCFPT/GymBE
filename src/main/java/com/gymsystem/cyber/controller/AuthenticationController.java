@@ -82,6 +82,12 @@ public class AuthenticationController {
     public CompletableFuture<ResponseObject> login(@RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
         return iFaceRecodeService.loginFaceID(file);
     }
+    @PostMapping(value = "face-logout", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "logout faceid")
+    public CompletableFuture<ResponseObject> logout(@RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
+        return iFaceRecodeService.loginFaceID(file);
+    }
 
     @GetMapping("/profile")
     @Operation(summary = "đang nhap (moi quyen)")

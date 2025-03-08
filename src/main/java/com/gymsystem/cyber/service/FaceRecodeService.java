@@ -176,8 +176,20 @@ public class FaceRecodeService implements IFaceRecodeService {
 
                     // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
                     if (!now.isBefore(startTime) && now.isBefore(endTime)) {
-                        schedule.setTimeCheckin(now);
-                        schedule.setStatus(true);
+                        if (schedule.getTimeCheckin() == null) {
+                            // Lần quét đầu tiên -> Checkin
+                            schedule.setTimeCheckin(now);
+                            schedule.setStatus(true);
+                        } else if (schedule.getTimeCheckout() == null) {
+                            // Lần quét thứ hai -> Checkout
+                            schedule.setTimeCheckout(now);
+                            schedule.setStatus(false);
+                        } else {
+                            return CompletableFuture.completedFuture(
+                                    new ResponseObject("Bạn đã checkin và checkout rồi, không thể thực hiện lại!",
+                                            HttpStatus.BAD_REQUEST, null));
+                        }
+
                         scheduleIORepository.save(schedule);
                         validSchedule = true;
                         break;
