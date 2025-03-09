@@ -33,7 +33,6 @@ public class Members {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @NotNull
     private String name ;
 
     private String decription;
