@@ -76,6 +76,13 @@ public class AuthenticationController {
         return iFaceRecodeService.regisFaceIDforAccount(id, file);
     }
 
+    @PostMapping(value = "face-login", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "login faceid")
+    public CompletableFuture<ResponseObject> login(@RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
+        return iFaceRecodeService.loginFaceID(file);
+    }
+
     @GetMapping("/profile")
     @Operation(summary = "đang nhap (moi quyen)")
     public String profile(OAuth2AuthenticationToken token, Model model) {
