@@ -47,4 +47,7 @@ public class SchedulesIO {
     private String activity;
 
     private boolean status;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Reviews reviews;
 }

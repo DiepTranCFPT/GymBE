@@ -33,4 +33,5 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
     Optional<User> findByFirebaseUid(String firebase);
 
     List<User> findByAvataIsNotNull();
+
 }

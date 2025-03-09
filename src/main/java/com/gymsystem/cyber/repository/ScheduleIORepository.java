@@ -1,29 +1,38 @@
 package com.gymsystem.cyber.repository;
 
-
 import com.gymsystem.cyber.entity.Members;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String> {
-    @Query("SELECT s FROM SchedulesIO s WHERE s.members.id = :membersId")
-    List<SchedulesIO> findAllByMembers_Id(@Param("membersId") String membersId);
+        @Query("SELECT s FROM SchedulesIO s WHERE s.members.id = :membersId")
+        List<SchedulesIO> findAllByMembers_Id(@Param("membersId") String membersId);
 
 
-    Optional<SchedulesIO> findByMembers_IdAndStatusTrueAndDateBetween(String memberId, LocalDateTime startOfDay, LocalDateTime endOfDay);
+        Optional<SchedulesIO> findByMembers_IdAndStatusTrueAndDateBetween(String memberId, LocalDateTime startOfDay, LocalDateTime endOfDay);
 
-    List<SchedulesIO> findByMembers(Members members);
+        List<SchedulesIO> findByMembers(Members members);
 
-    boolean existsByMembers_Id(String membersId);
+        boolean existsByMembers_Id(String membersId);
 
-    int countByMembers_Id(String membersId);
+        int countByMembers_Id(String membersId);
+
+        @Query("SELECT COUNT(DISTINCT s.members.id) FROM SchedulesIO s " +
+                "WHERE s.date BETWEEN :startOfDay AND :endOfDay")
+        int countMembersByDay(@Param("startOfDay") LocalDateTime startOfDay,
+                              @Param("endOfDay") LocalDateTime endOfDay);
+
+
+        @Query("SELECT COUNT(s.members.id) FROM SchedulesIO s " +
+                "WHERE FUNCTION('MONTH', s.date) = :month AND FUNCTION('YEAR', s.date) = :year")
+        int countTotalMembersByMonth(@Param("month") int month,
+                                     @Param("year") int year);
+
 
 }

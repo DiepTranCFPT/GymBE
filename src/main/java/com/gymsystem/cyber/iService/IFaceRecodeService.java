@@ -9,6 +9,6 @@ import java.util.concurrent.CompletableFuture;
 public interface IFaceRecodeService {
 
     CompletableFuture<ResponseObject> regisFaceIDforAccount(String email, MultipartFile file) throws IOException;
-
     CompletableFuture<ResponseObject> loginFaceID(MultipartFile file) throws IOException;
+
 }
