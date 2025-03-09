@@ -4,6 +4,7 @@ import com.gymsystem.cyber.iService.IMemberShipPlans;
 import com.gymsystem.cyber.model.Request.PlansRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,7 @@ public class MemberShipPlansController {
     public MemberShipPlansController(IMemberShipPlans membershipPlansService) {
         this.membershipPlansService = membershipPlansService;
     }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PostMapping
     public CompletableFuture<ResponseObject> addMembershipPlan(@RequestBody PlansRequest membershipPlanRequest) {
         return membershipPlansService.addMembershipPlan(membershipPlanRequest);
@@ -33,12 +35,12 @@ public class MemberShipPlansController {
     public CompletableFuture<ResponseObject> getMembershipPlan(String name) {
         return membershipPlansService.getMembershipPlan(name);
     }
-
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public CompletableFuture<ResponseObject> updateMembershipPlan( String name, @RequestBody PlansRequest membershipPlanRequest) {
         return membershipPlansService.updateMembershipPlan(name, membershipPlanRequest);
     }
-
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public CompletableFuture<ResponseObject> deleteMembershipPlan( String name) {
         return membershipPlansService.deleteMembershipPlan(name);

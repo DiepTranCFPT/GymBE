@@ -5,6 +5,7 @@ package com.gymsystem.cyber.controller;
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
 import com.gymsystem.cyber.model.Request.PTforUserRequest;
+import com.gymsystem.cyber.model.Request.PTscheduleRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,10 @@ public class BookingController {
     @PostMapping("/Trainnerforuser")
     public ResponseObject trainerforUser(@RequestBody  PTforUserRequest pTforUserRequest) throws AccountNotFoundException {
        return memberService.regisPTForUser(pTforUserRequest);
+    }
+
+    @PostMapping("/regisPTBySchedule")
+    public ResponseObject regisPTBySchedule(@RequestParam PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException {
+       return memberService.regisPTForSchedule(pTscheduleRequest);
     }
 }

@@ -29,6 +29,8 @@ public class Trainer {
 
     private String specialization;
 
+    private boolean status;
+
     @Min(0)
     @Max(100)
     private int experience_year;
