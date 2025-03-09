@@ -55,7 +55,7 @@ public class TrainerService implements ITrainerService {
                                     .email(trainer.getUser().getEmail()).build()
                     ).toList();
             return ResponseObject.builder()
-                    .data(temp.isEmpty() ? temp : List.of())
+                    .data(temp.isEmpty() ? List.of() : temp)
                     .httpStatus(HttpStatus.OK)
                     .message("GET ALL TRAINERS")
                     .build();
