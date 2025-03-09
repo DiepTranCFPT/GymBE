@@ -8,4 +8,8 @@ import java.util.concurrent.CompletableFuture;
 public interface IScheduleService {
     CompletableFuture<ResponseObject> getSchedule();
 
+    CompletableFuture<ResponseObject> getScheduleinDay();
+
+
+
 }
