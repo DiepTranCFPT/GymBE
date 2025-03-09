@@ -39,6 +39,8 @@ public class SchedulesIO {
 
     private String activity;
 
+    private int Time;
+
     private boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
