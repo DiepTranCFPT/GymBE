@@ -59,6 +59,7 @@ public class ScheduleService implements IScheduleService {
         List<SchedulesIO> schedulesIO = scheduleIORepository.findAll();
         List<ScheduleinDayRespone> scheduleinDayRespones = new ArrayList<>();
         for (SchedulesIO schedulesIO1 : schedulesIO){
+            if(schedulesIO1.getTimeCheckin() == null)break;
             if(schedulesIO1.getTimeCheckin().getDayOfYear() == dateTime){
                 ScheduleinDayRespone scheduleinDayRespone = new ScheduleinDayRespone();
                 scheduleinDayRespone.setCheckin(schedulesIO1.getTimeCheckin());
