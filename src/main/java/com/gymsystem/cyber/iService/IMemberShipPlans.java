@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.concurrent.CompletableFuture;
 
-@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+
 public interface IMemberShipPlans {
     CompletableFuture<ResponseObject> getMembershipPlans();
     CompletableFuture<ResponseObject> getMembershipPlan(String name);

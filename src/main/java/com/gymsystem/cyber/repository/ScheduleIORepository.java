@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +18,12 @@ public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String>
 
         List<SchedulesIO> findByMembers(Members members);
 
+        Optional<SchedulesIO> findById(String id);
+
+
         boolean existsByMembers_Id(String membersId);
 
         int countByMembers_Id(String membersId);
+
 
 }

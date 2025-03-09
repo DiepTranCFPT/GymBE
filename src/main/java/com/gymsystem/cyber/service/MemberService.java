@@ -4,6 +4,7 @@ import com.gymsystem.cyber.entity.*;
 import com.gymsystem.cyber.iService.iMember;
 import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
 import com.gymsystem.cyber.model.Request.PTforUserRequest;
+import com.gymsystem.cyber.model.Request.PTscheduleRequest;
 import com.gymsystem.cyber.model.Response.BookingRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.*;
@@ -143,28 +144,41 @@ public class MemberService implements iMember {
 
     @Override
     public ResponseObject regisPTForUser(PTforUserRequest pTforUserRequest) throws AccountNotFoundException {
-        // Find the user by ID, throw exception if not found
         User user = authenticationRepository.findById(pTforUserRequest.getIdUser())
                 .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
 
-        // Get the list of schedules associated with the user
         List<SchedulesIO> list = scheduleIORepository.findByMembers(user.getMembers());
 
-        // Find the trainer by ID, throw exception if not found
         Trainer trainer = trainerRepository.findById(pTforUserRequest.getIdTrainer())
                 .orElseThrow(() -> new AccountNotFoundException("Trainer Not Found"));
 
-        // Update all schedules with the new trainer
         list.forEach(schedulesIO -> schedulesIO.setTrainer(trainer));
 
-        // Save all updated schedules in one batch
         scheduleIORepository.saveAll(list);
 
-        // Return a success response
         return ResponseObject.builder()
                 .httpStatus(HttpStatus.OK)
                 .message("RegisPT " + trainer.getUser().getName() + " Success")
                 .build();
+    }
+
+    @Override
+    public ResponseObject regisPTForSchedule(PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException {
+        User user = accountUtils.getCurrentUser();
+
+        SchedulesIO schedulesIO = scheduleIORepository.findById(pTscheduleRequest.getIdSchedule()).orElseThrow(() -> new AccountNotFoundException("Schedule does not exist in account"));
+
+
+        Trainer trainer = trainerRepository.findById(pTscheduleRequest.getIdPT()).orElseThrow(() -> new AccountNotFoundException("Trainer Not Found"));
+
+        if (!trainer.isStatus()) {
+            schedulesIO.setTrainer(trainer);
+            trainer.setStatus(true);
+            scheduleIORepository.save(schedulesIO);
+            return ResponseObject.builder().message("Success").build();
+        } else {
+            return ResponseObject.builder().message("fail").build();
+        }
     }
 
 }
