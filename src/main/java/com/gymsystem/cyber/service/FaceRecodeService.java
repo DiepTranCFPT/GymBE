@@ -20,7 +20,6 @@ import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,12 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -47,42 +44,40 @@ public class FaceRecodeService implements IFaceRecodeService {
     private final MemberRepository memberRepository;
     private List<User> users;
 
-    public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository) {
+    @Autowired
+    public FaceRecodeService(AuthenticationRepository authenticationRepository,
+                             ScheduleIORepository scheduleIORepository,
+                             MemberRepository memberRepository) {
         this.authenticationRepository = authenticationRepository;
         this.scheduleIORepository = scheduleIORepository;
         this.memberRepository = memberRepository;
 
+        // Load the face detection model
         users = authenticationRepository.findByAvataIsNotNull();
         try {
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream("haarcascade_frontalface_default.xml");
             if (inputStream == null) {
-                throw new IOException("Không tìm thấy file haarcascade_frontalface_default.xml trong resources!");
+                throw new IOException("Face detection model file not found!");
             }
             File tempFile = File.createTempFile("cascade_", ".xml");
             Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             this.faceDetector = new CascadeClassifier(tempFile.getAbsolutePath());
-
-            // Kiểm tra nếu faceDetector không được khởi tạo thành công
             if (this.faceDetector.empty()) {
-                throw new IOException("Không thể tải mô hình Haar Cascade!");
+                throw new IOException("Failed to load face detection model!");
             }
             tempFile.deleteOnExit();
         } catch (IOException e) {
-            // Log lỗi để dễ dàng kiểm tra nguyên nhân
-            System.err.println("Lỗi khi khởi tạo faceDetector: " + e.getMessage());
-            throw new RuntimeException("Khởi tạo faceDetector thất bại: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to initialize face detection model: " + e.getMessage(), e);
         }
     }
-
 
     @Override
     @Transactional
     public CompletableFuture<ResponseObject> regisFaceIDforAccount(String email, MultipartFile file) throws IOException {
-        User user = authenticationRepository.findByEmail(email)
-                .orElse(null);
+        User user = authenticationRepository.findByEmail(email).orElse(null);
 
         if (user == null) {
-            return CompletableFuture.completedFuture(new ResponseObject("Account not exist!", HttpStatus.BAD_REQUEST, false));
+            return CompletableFuture.completedFuture(new ResponseObject("Account not found!", HttpStatus.BAD_REQUEST, false));
         }
 
         if (user.getAvata() != null) {
@@ -101,7 +96,7 @@ public class FaceRecodeService implements IFaceRecodeService {
         try {
             file.transferTo(tempFile);
             if (!isFaceExist(tempFile)) {
-                return CompletableFuture.completedFuture(new ResponseObject("Face not found!", HttpStatus.BAD_REQUEST, false));
+                return CompletableFuture.completedFuture(new ResponseObject("No face detected!", HttpStatus.BAD_REQUEST, false));
             }
 
             byte[] imageBytes = Files.readAllBytes(tempFile.toPath());
@@ -114,7 +109,6 @@ public class FaceRecodeService implements IFaceRecodeService {
         }
     }
 
-
     @Override
     @Transactional
     @Async
@@ -123,20 +117,17 @@ public class FaceRecodeService implements IFaceRecodeService {
         Mat inputImage = convertByteArrayToMat(imageBytes);
 
         if (inputImage.empty()) {
-            return CompletableFuture.completedFuture(
-                    new ResponseObject("Ảnh không hợp lệ!", HttpStatus.BAD_REQUEST, null));
+            return CompletableFuture.completedFuture(new ResponseObject("Invalid image!", HttpStatus.BAD_REQUEST, null));
         }
 
         Mat face = detectAndNormalizeFace(inputImage);
         if (face == null) {
-            return CompletableFuture.completedFuture(
-                    new ResponseObject("Không tìm thấy khuôn mặt!", HttpStatus.BAD_REQUEST, null));
+            return CompletableFuture.completedFuture(new ResponseObject("No face detected!", HttpStatus.BAD_REQUEST, null));
         }
 
         Mat inputFeatures = extractFaceFeatures(face);
         if (inputFeatures.empty()) {
-            return CompletableFuture.completedFuture(
-                    new ResponseObject("Không thể trích xuất đặc trưng khuôn mặt!", HttpStatus.BAD_REQUEST, null));
+            return CompletableFuture.completedFuture(new ResponseObject("Unable to extract face features!", HttpStatus.BAD_REQUEST, null));
         }
 
         boolean validSchedule = false;
@@ -154,31 +145,26 @@ public class FaceRecodeService implements IFaceRecodeService {
 
             double similarityScore = compareFeatures(inputFeatures, storedFeatures);
             if (similarityScore > 0.65) {
-
                 Optional<Members> members = memberRepository.findByUser_Id(user.getId());
                 if (!members.isPresent()) {
-                    return CompletableFuture.completedFuture(
-                            new ResponseObject("Tài khoản chưa đăng ký thành viên", HttpStatus.OK, ""));
+                    return CompletableFuture.completedFuture(new ResponseObject("Account not registered as a member", HttpStatus.OK, ""));
                 }
 
                 Members member = members.get();
                 if (member.isExprire() || (member.getExpireDate() != null && member.getExpireDate().isBefore(now))) {
-                    return CompletableFuture.completedFuture(
-                            new ResponseObject("Checkin thất bại! Gói Membership đã hết hạn.", HttpStatus.BAD_REQUEST, null));
+                    return CompletableFuture.completedFuture(new ResponseObject("Check-in failed! Membership has expired.", HttpStatus.BAD_REQUEST, null));
                 }
 
                 List<SchedulesIO> schedules = scheduleIORepository.findAllByMembers_Id(member.getId());
 
                 for (SchedulesIO schedule : schedules) {
-                    // Chỉ xét lịch có ngày trùng với hôm nay
                     if (!schedule.getDate().toLocalDate().isEqual(now.toLocalDate())) {
                         continue;
                     }
 
-                    LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);  // Giờ bắt đầu ( 6 )
-                    LocalDateTime endTime = startTime.plusHours(schedule.getTime());  // Giờ kết thúc
+                    LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);
+                    LocalDateTime endTime = startTime.plusHours(schedule.getTime());
 
-                    // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
                     if (!now.isBefore(startTime) && now.isBefore(endTime)) {
                         schedule.setTimeCheckin(now);
                         schedule.setStatus(true);
@@ -186,20 +172,16 @@ public class FaceRecodeService implements IFaceRecodeService {
                         validSchedule = true;
                         break;
                     } else {
-                        String errorMessage = String.format("Checkin thất bại! Gói dịch vụ: %s chỉ được checkin từ %s đến %s.",
+                        String errorMessage = String.format("Check-in failed! Service: %s can only check in from %s to %s.",
                                 member.getName(),
                                 startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-
-                        return CompletableFuture.completedFuture(
-                                new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
+                        return CompletableFuture.completedFuture(new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
                     }
                 }
 
-
                 if (!validSchedule) {
-                    return CompletableFuture.completedFuture(
-                            new ResponseObject("Không nằm trong thời gian tập luyện!", HttpStatus.BAD_REQUEST, null));
+                    return CompletableFuture.completedFuture(new ResponseObject("Not within training hours!", HttpStatus.BAD_REQUEST, null));
                 }
 
                 FaceReposi faceReposi = FaceReposi.builder()
@@ -207,15 +189,12 @@ public class FaceRecodeService implements IFaceRecodeService {
                         .goiTap(member.getName())
                         .hansd(1).build();
 
-                return CompletableFuture.completedFuture(
-                        new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
+                return CompletableFuture.completedFuture(new ResponseObject("Check-in successful!", HttpStatus.OK, faceReposi));
             }
         }
 
-        return CompletableFuture.completedFuture(
-                new ResponseObject("Không tìm thấy người dùng phù hợp!", HttpStatus.BAD_REQUEST, null));
+        return CompletableFuture.completedFuture(new ResponseObject("No matching user found!", HttpStatus.BAD_REQUEST, null));
     }
-
 
     @Transactional
     public List<SchedulesIO> getSchedules(String memberId) {
@@ -227,7 +206,6 @@ public class FaceRecodeService implements IFaceRecodeService {
         opencv_imgproc.cvtColor(image, grayImage, opencv_imgproc.COLOR_BGR2GRAY);
 
         RectVector faces = new RectVector();
-        // Sử dụng detectMultiScale của JavacPP
         faceDetector.detectMultiScale(grayImage, faces, 1.1, 3, 0, new Size(30, 30), new Size());
 
         if (faces.size() == 0) return null;
@@ -243,8 +221,8 @@ public class FaceRecodeService implements IFaceRecodeService {
     }
 
     private Mat extractFaceFeatures(Mat face) {
-        ORB orb = ORB.create(); // Tạo ORB không tham số
-        orb.setMaxFeatures(500); // Thiết lập số đặc trưng tối đa
+        ORB orb = ORB.create();
+        orb.setMaxFeatures(500);
         Mat descriptors = new Mat();
         KeyPointVector keyPoints = new KeyPointVector();
         orb.detectAndCompute(face, new Mat(), keyPoints, descriptors);
@@ -266,7 +244,6 @@ public class FaceRecodeService implements IFaceRecodeService {
         double avgDistance = matches.size() > 0 ? totalDistance / matches.size() : Double.MAX_VALUE;
         return avgDistance < 100 ? 1.0 - (avgDistance / 100.0) : 0.0;
     }
-
 
     private Mat convertByteArrayToMat(byte[] imageBytes) {
         return opencv_imgcodecs.imdecode(new Mat(new BytePointer(imageBytes)), opencv_imgcodecs.IMREAD_COLOR);
