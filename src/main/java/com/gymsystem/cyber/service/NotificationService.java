@@ -8,6 +8,7 @@ import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.NotificationsRepository;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.Optional;
 
 @Service
@@ -22,11 +23,11 @@ public class NotificationService implements INotify {
     }
 
     @Override
-    public void saveNotifacation(NotificationRequest notificationRequest) {
+    public void saveNotifacation(NotificationRequest notificationRequest) throws AccountNotFoundException {
 
-        Optional<User> user = authenticationRepository.findById(notificationRequest.getId());
+        User user = authenticationRepository.findById(notificationRequest.getId()).orElseThrow(()-> new AccountNotFoundException("Not found"));
         Notifications notifications = Notifications.builder()
-                .user(user.get())
+                .user(user)
                 .status(notificationRequest.getStatus())
                 .createAt(notificationRequest.getCreateAt())
                 .build();
