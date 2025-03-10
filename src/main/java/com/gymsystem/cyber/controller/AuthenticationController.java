@@ -42,6 +42,7 @@ public class AuthenticationController {
     public AuthenticationController(IAuthentication authenticationService
 //                                    IFaceRecodeService iFaceRecodeService
     ) {
+
         this.authenticationService = authenticationService;
 //        this.iFaceRecodeService = iFaceRecodeService;
     }
