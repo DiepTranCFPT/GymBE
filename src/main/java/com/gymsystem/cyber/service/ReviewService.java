@@ -1,6 +1,5 @@
 package com.gymsystem.cyber.service;
 
-import com.gymsystem.cyber.entity.Members;
 import com.gymsystem.cyber.entity.Reviews;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import com.gymsystem.cyber.entity.User;
@@ -25,15 +24,11 @@ public class ReviewService implements IReviewService {
     private final ReviewRepository reviewRepository;
 
 
-
-
     public ReviewService(AccountUtils accountUtils, ScheduleIORepository scheduleIORepository, MembershipPlansRepository membershipPlansRepository, ReviewRepository reviewRepository) {
         this.accountUtils = accountUtils;
         this.scheduleIORepository = scheduleIORepository;
-
         this.reviewRepository = reviewRepository;
     }
-
 
     @Override
     public ResponseObject createNewReview(ReviewRequest reviewRequest) {
@@ -57,9 +52,8 @@ public class ReviewService implements IReviewService {
                 .comment(reviewRequest.getDescription())
                 .rating(reviewRequest.getRating())
                 .trainer(check1.get().getTrainer())
-                .build();
+                .status(false).build();
 
-        // Save the review
         reviewRepository.save(reviews);
 
         return ResponseObject.builder()
@@ -68,5 +62,67 @@ public class ReviewService implements IReviewService {
                 .data(reviews)
                 .build();
     }
+
+    @Override
+    public ResponseObject getReviewsByTrainer(String userId) {
+        List<Reviews> reviewsList = reviewRepository.findByTrainerId(userId);
+        return ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .message("OK")
+                .data(reviewsList)
+                .build();
     }
 
+    @Override
+    public ResponseObject getReviewById(String reviewId) {
+        Optional<Reviews> review = reviewRepository.findById(reviewId);
+        if (review.isPresent()) {
+            return ResponseObject.builder()
+                    .httpStatus(HttpStatus.OK)
+                    .message("OK")
+                    .data(review.get())
+                    .build();
+        }
+        return ResponseObject.builder()
+                .httpStatus(HttpStatus.NOT_FOUND)
+                .message("Review not found.")
+                .build();
+    }
+
+    @Override
+    public ResponseObject updateReview(String reviewId, ReviewRequest reviewRequest) {
+        Optional<Reviews> existingReview = reviewRepository.findById(reviewId);
+        if (existingReview.isPresent()) {
+            Reviews review = existingReview.get();
+            review.setComment(reviewRequest.getDescription());
+            review.setRating(reviewRequest.getRating());
+            reviewRepository.save(review);
+
+            return ResponseObject.builder()
+                    .httpStatus(HttpStatus.OK)
+                    .message("Review updated successfully.")
+                    .data(review)
+                    .build();
+        }
+        return ResponseObject.builder()
+                .httpStatus(HttpStatus.NOT_FOUND)
+                .message("Review not found.")
+                .build();
+    }
+
+    @Override
+    public ResponseObject deleteReview(String reviewId) {
+        Optional<Reviews> review = reviewRepository.findById(reviewId);
+        if (review.isPresent()) {
+            review.get().setStatus(true);
+            return ResponseObject.builder()
+                    .httpStatus(HttpStatus.OK)
+                    .message("Review deleted successfully.")
+                    .build();
+        }
+        return ResponseObject.builder()
+                .httpStatus(HttpStatus.NOT_FOUND)
+                .message("Review not found.")
+                .build();
+    }
+}
