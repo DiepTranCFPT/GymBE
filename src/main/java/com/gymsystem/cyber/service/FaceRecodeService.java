@@ -205,7 +205,7 @@ public class FaceRecodeService implements IFaceRecodeService {
                 FaceReposi faceReposi = FaceReposi.builder()
                         .name(user.getId())
                         .goiTap(member.getName())
-                        .build();
+                        .hansd(1).build();
 
                 return CompletableFuture.completedFuture(
                         new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
