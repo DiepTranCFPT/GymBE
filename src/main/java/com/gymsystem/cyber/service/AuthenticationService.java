@@ -6,9 +6,12 @@ import com.gymsystem.cyber.enums.UserRole;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.gymsystem.cyber.exception.BadRequestException;
+import com.gymsystem.cyber.exception.GlobalException;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.exception.AuthException;
-import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
+import com.gymsystem.cyber.model.EmailDetail;
+import com.gymsystem.cyber.model.Request.*;
 import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.Response.UserRespone;
@@ -16,8 +19,6 @@ import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.MembershipPlansRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-import com.gymsystem.cyber.model.Request.LoginRequest;
-import com.gymsystem.cyber.model.Request.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -52,6 +53,8 @@ public class AuthenticationService implements IAuthentication {
 
     private final MembershipPlansRepository membershipPlansRepository;
 
+    private final EmailService emailService;
+
 
 //    private final AccountUtils accountUtils;
 
@@ -59,7 +62,7 @@ public class AuthenticationService implements IAuthentication {
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
                                  PasswordEncoder passwordEncoder,
-                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository
+                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository, EmailService emailService
 //            ,AccountUtils accountUtils
 
     ) {
@@ -68,6 +71,7 @@ public class AuthenticationService implements IAuthentication {
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
         this.membershipPlansRepository = membershipPlansRepository;
+        this.emailService = emailService;
     }
     @Override
     @Async
@@ -389,6 +393,42 @@ public class AuthenticationService implements IAuthentication {
                     .httpStatus(HttpStatus.OK)
                     .build();
         });
+    }
+    @Override
+    public int resetPassword(ResetPasswordRequest resetPasswordRequest) throws AccountNotFoundException {
+        User user = authenticationRepository.findByEmail(resetPasswordRequest.getEmail()).orElseThrow(()-> new AccountNotFoundException("Account not found"));
+        String token = tokenService.generateToken(user);
+        // Check if the token matches
+        if (!token.equals(resetPasswordRequest.getToken())) {
+            throw new GlobalException("Invalid token");
+        }else {
+            user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
+            authenticationRepository.save(user);
+            return 1;
+        }
+
+    }
+    @Override
+    public void forgotPassword(ForgotPasswordRequest forgotPasswordRequest) throws AccountNotFoundException {
+        User account = authenticationRepository.findByEmail(forgotPasswordRequest.getEmail()).orElseThrow(()-> new AccountNotFoundException("Account not found"));
+
+
+        EmailDetail emailDetail = new EmailDetail();
+        emailDetail.setRecipient(forgotPasswordRequest.getEmail());
+        emailDetail.setSubject("Reset Password for account " + forgotPasswordRequest.getEmail() + "!!!");
+        emailDetail.setMsgBody(""); // You might want to add a meaningful message here
+        emailDetail.setButtonValue("Reset Password");
+        emailDetail.setLink("https://gymbe-production.up.railway.app/api/authen/reset-password?token=" + tokenService.generateToken(account));
+        emailDetail.setName(account.getName());
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                emailService.sendMailTemplateForgot(emailDetail);
+            }
+        };
+
+        new Thread(r).start();
     }
 
 
