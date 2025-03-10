@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.login.AccountNotFoundException;
+
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -21,7 +23,7 @@ public class NotificationController {
     }
 
     @PostMapping("/send")
-    public String sendNotification(@RequestBody NotificationRequest notification) {
+    public String sendNotification(@RequestBody NotificationRequest notification) throws AccountNotFoundException {
         notificationService.saveNotifacation(notification);
         messagingTemplate.convertAndSend("/topic/notifications/" + notification.getId(), notification);
         return "Notification sent success!";
