@@ -53,21 +53,15 @@ public class FaceRecodeService implements IFaceRecodeService {
         this.memberRepository = memberRepository;
 
         // Load the face detection model
-        users = authenticationRepository.findByAvataIsNotNull();
+        
         try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("haarcascade_frontalface_default.xml");
-            if (inputStream == null) {
-                throw new IOException("Face detection model file not found!");
+            users = authenticationRepository.findByAvataIsNotNull();
+            faceDetector = new CascadeClassifier("path/to/haarcascade_frontalface_default.xml");
+            if (faceDetector.empty()) {
+                throw new IOException("Failed to load face detector model");
             }
-            File tempFile = File.createTempFile("cascade_", ".xml");
-            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            this.faceDetector = new CascadeClassifier(tempFile.getAbsolutePath());
-            if (this.faceDetector.empty()) {
-                throw new IOException("Failed to load face detection model!");
-            }
-            tempFile.deleteOnExit();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize face detection model: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to initialize FaceRecodeService: " + e.getMessage(), e);
         }
     }
 
