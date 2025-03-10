@@ -61,14 +61,19 @@ public class FaceRecodeService implements IFaceRecodeService {
             File tempFile = File.createTempFile("cascade_", ".xml");
             Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             this.faceDetector = new CascadeClassifier(tempFile.getAbsolutePath());
+
+            // Kiểm tra nếu faceDetector không được khởi tạo thành công
             if (this.faceDetector.empty()) {
                 throw new IOException("Không thể tải mô hình Haar Cascade!");
             }
             tempFile.deleteOnExit();
         } catch (IOException e) {
+            // Log lỗi để dễ dàng kiểm tra nguyên nhân
+            System.err.println("Lỗi khi khởi tạo faceDetector: " + e.getMessage());
             throw new RuntimeException("Khởi tạo faceDetector thất bại: " + e.getMessage(), e);
         }
     }
+
 
     @Override
     @Transactional
