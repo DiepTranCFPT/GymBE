@@ -9,16 +9,21 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
+import lombok.*;
+import lombok.experimental.SuperBuilder;
+import org.springframework.transaction.annotation.Transactional;
+
+
+import java.util.List;
+
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "account", indexes = {@Index(name = "idx_email", columnList = "email"),
+        @Index(name = "idx_Uid", columnList = "firebaseUid"),
         @Index(name = "idx_phone", columnList = "phone")})
 @SuperBuilder
 public class User extends BaseEntity {
@@ -31,6 +36,9 @@ public class User extends BaseEntity {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
+
+    private String firebaseUid;
+
 
     @Column(unique = true)
     @Pattern(regexp = "^\\+?[0-9. ()-]{7,25}$", message = "Invalid phone number format")
@@ -45,6 +53,7 @@ public class User extends BaseEntity {
     @Email(message = "Email should be valid")
     private String email;
 
+
     private boolean enable;
 
     private String verificationCode;
@@ -54,5 +63,10 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] avata;
 
+    @OneToOne(mappedBy = "user")
+    public Members members;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Trainer trainer;
 
 }
