@@ -15,4 +15,6 @@ public interface TrainerRepository extends JpaRepository<Trainer,String> {
 
     Optional<Trainer> findById(String id);
 
+    boolean existsByUser_Id(String userId);
+
 }

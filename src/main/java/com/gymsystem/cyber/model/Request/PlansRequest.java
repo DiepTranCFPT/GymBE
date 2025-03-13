@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -14,13 +15,18 @@ import java.time.LocalDateTime;
 @Builder
 @Data
 public class PlansRequest {
+
+  private String id;
+
   private  String name;
 
   private String description;
 
   private Double price;
 
-  private LocalDateTime startedDate;
+  private LocalDate startedDate;
 
-  private LocalDateTime endDate;
+  private LocalDate endDate;
+
+  private int TimeInDay;
 }

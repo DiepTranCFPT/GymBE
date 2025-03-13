@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -64,4 +65,8 @@ public class User extends BaseEntity {
 
     @OneToOne(mappedBy = "user")
     public Members members;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Trainer trainer;
+
 }

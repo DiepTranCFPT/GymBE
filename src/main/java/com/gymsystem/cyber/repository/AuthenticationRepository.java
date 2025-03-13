@@ -34,4 +34,6 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
 
     List<User> findByAvataIsNotNull();
 
+
+
 }

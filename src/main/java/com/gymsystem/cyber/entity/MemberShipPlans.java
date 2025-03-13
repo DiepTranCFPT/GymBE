@@ -41,6 +41,9 @@ public class MemberShipPlans {
 
     private boolean isActive;
 
+    @JoinColumn(name = "time_in_day")
+    private int TimeInDay;
+
     @OneToMany(mappedBy = "memberShipPlans",fetch = FetchType.EAGER)
     private List<Subscriptions> subscriptions;
 

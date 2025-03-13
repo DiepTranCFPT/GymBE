@@ -6,12 +6,10 @@ import com.gymsystem.cyber.enums.UserRole;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.gymsystem.cyber.exception.BadRequestException;
-import com.gymsystem.cyber.exception.GlobalException;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.exception.AuthException;
-import com.gymsystem.cyber.model.EmailDetail;
-import com.gymsystem.cyber.model.Request.*;
+import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
+import com.gymsystem.cyber.model.Request.TypeEditUser;
 import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
 import com.gymsystem.cyber.model.Response.UserRespone;
@@ -19,6 +17,8 @@ import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.MembershipPlansRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
+import com.gymsystem.cyber.model.Request.LoginRequest;
+import com.gymsystem.cyber.model.Request.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -29,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
-
 
 
 @Service
@@ -53,8 +53,6 @@ public class AuthenticationService implements IAuthentication {
 
     private final MembershipPlansRepository membershipPlansRepository;
 
-    private final EmailService emailService;
-
 
 //    private final AccountUtils accountUtils;
 
@@ -62,7 +60,7 @@ public class AuthenticationService implements IAuthentication {
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
                                  PasswordEncoder passwordEncoder,
-                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository, EmailService emailService
+                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository
 //            ,AccountUtils accountUtils
 
     ) {
@@ -71,8 +69,8 @@ public class AuthenticationService implements IAuthentication {
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
         this.membershipPlansRepository = membershipPlansRepository;
-        this.emailService = emailService;
     }
+
     @Override
     @Async
     @Transactional
@@ -132,7 +130,6 @@ public class AuthenticationService implements IAuthentication {
                     .deleted(false).build();
 
 
-
             authenticationRepository.saveAndFlush(user);
 
             return ResponseObject.builder()
@@ -142,100 +139,6 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
-
-
-
-
-//    public User registerStaff(RegisterRequest registerRequest) {
-//        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
-//        if (existingUser == null) {
-//            existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
-//        }
-//        if (existingUser != null) {
-//            existingUser.setLastUpdatedTime(LocalDateTime.now());
-//            existingUser.setRole(UserRole.STAFF);
-//            return existingUser;
-//        } else {
-//            User user = new User();
-//            user.setName(registerRequest.getName());
-//            user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-//            user.setPhone(registerRequest.getPhone());
-//            user.setEmail(registerRequest.getEmail());
-//            user.setRole(UserRole.STAFF);
-//            user.setEnable(true);
-//            user.setCreateBy("ADMIN");
-//            user.setCreateTime(LocalDateTime.now());
-//            user.setVerificationCode(UUID.randomUUID().toString());
-//            authenticationRepository.save(user);
-//            return user;
-//
-//        }
-//
-//    }
-//
-//    public Trainer registerPT(RegisterRequestPT registerRequest) {
-//        User existingUser = authenticationRepository.findByEmail(registerRequest.getEmail());
-//        if (existingUser == null) {
-//            existingUser = authenticationRepository.findByPhone(registerRequest.getPhone());
-//        }
-//
-//        if (existingUser != null) {
-//            existingUser.setName(registerRequest.getName());
-//            existingUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-//            existingUser.setRole(UserRole.PT);
-//            existingUser.setCreateBy("ADMIN");
-//            existingUser.setLastUpdatedTime(LocalDateTime.now());
-//            authenticationRepository.save(existingUser);
-//            Trainer trainer = new Trainer();
-//
-//            trainer.setUser(existingUser);
-//            trainer.setExperience_year(registerRequest.getExperienceYear());
-//            trainer.setAvailability(true);
-//            trainer.setSpecialization(registerRequest.getSpeciliation());
-//            trainerRepository.save(trainer);
-//
-//            return trainer;
-//        } else {
-//            User newUser = new User();
-//            newUser.setName(registerRequest.getName());
-//            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-//            newUser.setPhone(registerRequest.getPhone());
-//            newUser.setEmail(registerRequest.getEmail());
-//            newUser.setRole(UserRole.PT);
-//            newUser.setEnable(true);
-//            newUser.setCreateBy("ADMIN");
-//            newUser.setCreateTime(LocalDateTime.now());
-//            newUser.setVerificationCode(UUID.randomUUID().toString());
-//            authenticationRepository.save(newUser);
-//
-//            Trainer trainer = new Trainer();
-//            trainer.setUser(existingUser);
-//            trainer.setExperience_year(registerRequest.getExperienceYear());
-//            trainer.setAvailability(true);
-//            trainer.setSpecialization(registerRequest.getSpeciliation());
-//            trainerRepository.save(trainer);
-//
-//            return trainer;
-//        }
-//    }
-//
-//
-//    public AccountResponse login(LoginRequest loginRequest) {
-//        var account = authenticationRepository.findByEmailAndAndDeletedIsFalse(loginRequest.getEmail())
-//                .orElseThrow(() -> new UsernameNotFoundException("Account not found or account deleted!"));
-//
-//
-//        String token = tokenService.generateToken(account);
-//        AccountResponse accountResponse = new AccountResponse();
-//        accountResponse.setId(account.getId());
-//        accountResponse.setEmail(account.getEmail());
-//        accountResponse.setToken(token);
-//        accountResponse.setName(account.getName());
-//        accountResponse.setPhone(account.getPhone());
-//        return accountResponse;
-//    }
-
-
 
     @Override
     public CompletableFuture<ResponseObject> Oath(String token) throws FirebaseAuthException {
@@ -295,8 +198,8 @@ public class AuthenticationService implements IAuthentication {
         });
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Override
+    @Transactional
     public CompletableFuture<ResponseObject> GetAll() {
         List<User> users = authenticationRepository.findAll();
         List<UserRespone> accountResponses = new ArrayList<>();
@@ -304,7 +207,7 @@ public class AuthenticationService implements IAuthentication {
         for (User user : users) {
             String planName = "No Plan";
 
-            if(user.getMembers() != null)
+            if (user.getMembers() != null)
                 planName = user.getMembers().getSubscriptions().getMemberShipPlans().getName();
 
             accountResponses.add(UserRespone.builder()
@@ -328,7 +231,7 @@ public class AuthenticationService implements IAuthentication {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String edit(UserRespone userRespone) throws AccountNotFoundException {
-      User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
         user.setName(userRespone.getName());
         user.setEmail(userRespone.getEmail());
         user.setPhone(userRespone.getPhone());
@@ -340,11 +243,43 @@ public class AuthenticationService implements IAuthentication {
 
     @Override
     public String delete(String id) throws AccountNotFoundException {
-        User user = authenticationRepository.findById(id) .orElseThrow(() -> new AccountNotFoundException("Account does not exist"));;
-        user.setEnable(false);
+        User user = authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        ;
+        user.setEnable(!user.isEnable());
         authenticationRepository.saveAndFlush(user);
         return "Success";
     }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> editUserInfor(String id, TypeEditUser typeEditUser, String content) {
+
+        User user = authenticationRepository.findById(id).orElseThrow(() -> new RuntimeException("Account does not exist"));
+        if (!user.isEnable()) {
+            throw new UsernameNotFoundException("Account is not enabled!");
+        }
+        if (user.isDeleted()) {  // Kiểm tra đúng logic
+            throw new UsernameNotFoundException("Account is deleted!");
+        }
+
+        switch (typeEditUser) {
+            case Name -> user.setName(content);
+            case Phone -> {
+                if (!content.matches("\\d{10,15}")) {
+                    throw new IllegalArgumentException("Phone number must be between 10 and 15 digits and contain only numbers.");
+                }
+                user.setPhone(content);
+            }
+            default -> throw new UsernameNotFoundException("Invalid type edit!");
+        }
+        authenticationRepository.saveAndFlush(user);
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .message("edit successfully!")
+                .data(true)
+                .httpStatus(HttpStatus.OK)
+                .build());
+    }
+
     @Transactional
     @Override
     @Async
@@ -393,42 +328,6 @@ public class AuthenticationService implements IAuthentication {
                     .httpStatus(HttpStatus.OK)
                     .build();
         });
-    }
-    @Override
-    public int resetPassword(ResetPasswordRequest resetPasswordRequest) throws AccountNotFoundException {
-        User user = authenticationRepository.findByEmail(resetPasswordRequest.getEmail()).orElseThrow(()-> new AccountNotFoundException("Account not found"));
-        String token = tokenService.generateToken(user);
-        // Check if the token matches
-        if (!token.equals(resetPasswordRequest.getToken())) {
-            throw new GlobalException("Invalid token");
-        }else {
-            user.setPassword(passwordEncoder.encode(resetPasswordRequest.getNewPassword()));
-            authenticationRepository.save(user);
-            return 1;
-        }
-
-    }
-    @Override
-    public void forgotPassword(ForgotPasswordRequest forgotPasswordRequest) throws AccountNotFoundException {
-        User account = authenticationRepository.findByEmail(forgotPasswordRequest.getEmail()).orElseThrow(()-> new AccountNotFoundException("Account not found"));
-
-
-        EmailDetail emailDetail = new EmailDetail();
-        emailDetail.setRecipient(forgotPasswordRequest.getEmail());
-        emailDetail.setSubject("Reset Password for account " + forgotPasswordRequest.getEmail() + "!!!");
-        emailDetail.setMsgBody(""); // You might want to add a meaningful message here
-        emailDetail.setButtonValue("Reset Password");
-        emailDetail.setLink("https://gymbe-production.up.railway.app/api/authen/reset-password?token=" + tokenService.generateToken(account));
-        emailDetail.setName(account.getName());
-
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                emailService.sendMailTemplateForgot(emailDetail);
-            }
-        };
-
-        new Thread(r).start();
     }
 
 

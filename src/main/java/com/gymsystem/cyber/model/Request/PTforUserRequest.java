@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class PTforUserRequest {
     String idTrainer;
-    String idUser;
+    String idScheduleIo;
 }

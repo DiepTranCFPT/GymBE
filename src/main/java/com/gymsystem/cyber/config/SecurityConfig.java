@@ -50,9 +50,9 @@ public class SecurityConfig {
             "/api/authen/firebase-login",
             "/login/oauth2/code/google",
             "/api/notifications/**",
-            "/ws/info",
-            "/api/authen/forgot-password",
-            "/api/authen/reset-password"
+            "/api/membership-plan/all/**",
+            "/api/membership-plan/mb-plan/**",
+            "/ws/info"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
             "/swagger-ui/**",
@@ -63,6 +63,11 @@ public class SecurityConfig {
             "/api/authen/register/**",
             "/api/authen/{{id}}/register-faceid/**",
             "/api/trainers/**",
+            "/api/membership-plan/add-plan/**",
+            "/api/membership-plan/update/**",
+            "/api/membership-plan/delete/**",
+            "/api/authen/get-all/**",
+            "/api/membership-plan/activitie/**",
             "/"
     };
 
@@ -86,7 +91,7 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).hasAnyRole( "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())

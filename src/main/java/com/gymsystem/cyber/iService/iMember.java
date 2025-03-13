@@ -6,6 +6,7 @@ import com.gymsystem.cyber.model.Request.PTscheduleRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.concurrent.CompletableFuture;
 
 
 public interface iMember {
@@ -17,4 +18,7 @@ public interface iMember {
     ResponseObject regisPTForUser(PTforUserRequest pTforUserRequest) throws AccountNotFoundException;
 
     ResponseObject regisPTForSchedule(PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException;
+
+    CompletableFuture<ResponseObject> getMemberByUserId(String id);
+
 }

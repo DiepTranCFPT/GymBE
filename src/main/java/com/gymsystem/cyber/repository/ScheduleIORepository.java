@@ -26,5 +26,5 @@ public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String>
 
         int countByMembers_Id(String membersId);
 
-
+        List<SchedulesIO> findAllByDateBetween(LocalDateTime dateAfter, LocalDateTime dateBefore);
 }
