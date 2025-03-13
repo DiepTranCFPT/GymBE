@@ -1,26 +1,25 @@
 package com.gymsystem.cyber.service;
 
-import com.gymsystem.cyber.IService.ITrainerService;
+
 import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
+import com.gymsystem.cyber.enums.UserRole;
+import com.gymsystem.cyber.iService.ITrainerService;
 import com.gymsystem.cyber.model.Request.TrainerRequest;
 import com.gymsystem.cyber.model.Response.TrainerReponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-import io.grpc.Grpc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Service
 public class TrainerService implements ITrainerService {
@@ -38,23 +37,24 @@ public class TrainerService implements ITrainerService {
 
     @Override
     @Transactional
-    @Async
     public CompletableFuture<ResponseObject> getAllTrains() {
 
         return CompletableFuture.supplyAsync(() -> {
 
             List<TrainerReponse> temp = trainerRepository.findAll().stream()
-                    .filter(trainer -> !trainer.getUser().isDeleted() && trainer.getUser().isEnable())
+                    .filter(trainer -> !trainer.getUser().isDeleted())
                     .map(trainer ->
-                            TrainerReponse.builder().avata(trainer.getUser().getAvata())
-                                    .phone(trainer.getUser().getPhone())
+                            TrainerReponse.builder()
+                                    .phone(trainer.getUser().getPhone() == null ? "" : trainer.getUser().getPhone())
                                     .experience_year(trainer.getExperience_year())
                                     .name(trainer.getUser().getName())
                                     .id(trainer.getId())
+                                    .enable(trainer.isLocked())
+                                    .status(trainer.isStatus())
                                     .email(trainer.getUser().getEmail()).build()
                     ).toList();
             return ResponseObject.builder()
-                    .data(temp.isEmpty() ? temp : List.of())
+                    .data(temp.isEmpty() ? List.of() : temp)
                     .httpStatus(HttpStatus.OK)
                     .message("GET ALL TRAINERS")
                     .build();
@@ -96,34 +96,38 @@ public class TrainerService implements ITrainerService {
     @Async
     public CompletableFuture<ResponseObject> creatTrainer(TrainerRequest trainerRequest, String emailUser) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            User user = authenticationRepository.findByEmail(emailUser).map(user1 -> {
-                        if (!user1.isDeleted() && user1.isEnable()) {
-                            return user1;
-                        }
-                        throw new UsernameNotFoundException("USER NOT FOUND OR DELETED");
-                    })
-                    .orElseThrow(() -> new UsernameNotFoundException("User not exist or deleted, is not enabled"));
+        // Tìm user theo email và kiểm tra trạng thái
+        User user = authenticationRepository.findByEmail(emailUser)
+                .filter(u -> !u.isDeleted() && u.isEnable())
+                .orElseThrow(() -> new UsernameNotFoundException("User not exist or deleted, is not enabled"));
 
-            if (trainerRepository.existsByUser(user))
-                throw new UsernameNotFoundException("Trainer exists!");
+        // Kiểm tra xem user đã là trainer chưa
+        if (user.getTrainer() != null) {
+            throw new UsernameNotFoundException("Trainer already exists!");
+        }
 
-            Trainer trainer = Trainer.builder()
-                    .experience_year(Math.max(trainerRequest.getExperienceYear(), 0))
-                    .user(user)
-                    .specialization(trainerRequest.getSpecialization())
-                    .build();
+        // Cập nhật role
+        user.setRole(UserRole.PT);
+        authenticationRepository.save(user);
 
-            trainerRepository.saveAndFlush(trainer);
+        // Tạo trainer
+        Trainer trainer = Trainer.builder()
+                .experience_year(Math.max(trainerRequest.getExperienceYear(), 0))
+                .user(user)
+                .status(true)
+                .specialization(trainerRequest.getSpecialization())
+                .locked(false)
+                .build();
 
-            return ResponseObject.builder()
-                    .httpStatus(HttpStatus.OK)
-                    .data(true)
-                    .message("add trainer successfully!")
-                    .build();
+        trainerRepository.save(trainer);
 
-        });
-
+        return CompletableFuture.completedFuture(
+                ResponseObject.builder()
+                        .httpStatus(HttpStatus.OK)
+                        .data(true)
+                        .message("Add trainer successfully!")
+                        .build()
+        );
     }
 
 
@@ -148,6 +152,7 @@ public class TrainerService implements ITrainerService {
 
             boolean temp = !trainer.isLocked();
             trainer.setLocked(temp);
+            trainer.setStatus(false);
             trainerRepository.saveAndFlush(trainer);
             return ResponseObject.builder()
                     .httpStatus(HttpStatus.OK)
@@ -156,5 +161,6 @@ public class TrainerService implements ITrainerService {
                     .build();
         });
     }
+
 
 }

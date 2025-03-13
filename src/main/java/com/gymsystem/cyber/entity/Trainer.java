@@ -4,17 +4,18 @@ package com.gymsystem.cyber.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Builder
+@SuperBuilder
+@Table(name = "trainer")
 public class Trainer {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -24,7 +25,10 @@ public class Trainer {
     @JoinColumn(name = "user_id")
     private User user;
 
+
     private String specialization;
+
+    private boolean status = true;
 
     @Min(0)
     @Max(100)

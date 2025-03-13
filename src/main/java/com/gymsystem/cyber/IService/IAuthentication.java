@@ -1,9 +1,12 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
+import com.gymsystem.cyber.model.Request.TypeEditUser;
+import com.gymsystem.cyber.model.Response.AccountResponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -17,6 +20,13 @@ public interface IAuthentication {
 
     CompletableFuture<ResponseObject> Oath (String token) throws FirebaseAuthException;
 
+    CompletableFuture<ResponseObject> GetAll ();
+
+    String edit ( UserRespone userRespone) throws AccountNotFoundException;
+    String delete (String id) throws AccountNotFoundException;
+
+
+    CompletableFuture<ResponseObject> editUserInfor(String id, TypeEditUser typeEditUser, String content);
 //    CompletableFuture<ResponseObject> registerFaceId(String idUser, byte[] face);
 
 }

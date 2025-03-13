@@ -1,6 +1,6 @@
 package com.gymsystem.cyber.controller;
 
-import com.gymsystem.cyber.IService.ITrainerService;
+import com.gymsystem.cyber.iService.ITrainerService;
 import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.model.Request.TrainerRequest;

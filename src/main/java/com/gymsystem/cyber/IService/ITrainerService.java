@@ -1,4 +1,4 @@
-package com.gymsystem.cyber.IService;
+package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.model.Request.TrainerRequest;
 import com.gymsystem.cyber.model.ResponseObject;
@@ -25,6 +25,7 @@ public interface ITrainerService {
 
     /**
      * Thêm mới hoặc cập nhật Trainer
+     *
      * @param @{@link TrainerRequest} trainerRequest
      * @param @{@link String} emailUser
      * @return @{@link CompletableFuture<ResponseObject>} true f
@@ -35,6 +36,7 @@ public interface ITrainerService {
 
     /**
      * Xóa Trainer theo ID
+     *
      * @param {{@link String}} id
      * @return {@link CompletableFuture<ResponseObject>}
      */
@@ -42,4 +44,5 @@ public interface ITrainerService {
 
 //    // Tìm Trainer theo User
 //    Trainer findTrainerByUser(User user);
+
 }

@@ -1,19 +1,21 @@
 package com.gymsystem.cyber.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
-import com.gymsystem.cyber.IService.IAuthentication;
-import com.gymsystem.cyber.IService.IFaceRecodeService;
+import com.gymsystem.cyber.iService.IAuthentication;
+import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
+import com.gymsystem.cyber.model.Request.TypeEditUser;
+import com.gymsystem.cyber.model.Response.AccountResponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.model.Request.LoginRequest;
+import com.gymsystem.cyber.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.ui.Model;
@@ -60,6 +62,7 @@ public class AuthenticationController {
 
 
     @PostMapping("/firebase-login")
+    @Operation(summary = "dang nhap voi firebase token")
     public CompletableFuture<ResponseObject> firebaseLogin(@RequestBody Map<String, String> request) throws FirebaseAuthException {
         String token = request.get("token");
         System.out.println(token);
@@ -73,6 +76,13 @@ public class AuthenticationController {
     public CompletableFuture<ResponseObject> registerFaceId(@PathVariable("id") String id,
                                                             @RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
         return iFaceRecodeService.regisFaceIDforAccount(id, file);
+    }
+
+    @PostMapping(value = "face-login", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    @Operation(summary = "login faceid")
+    public CompletableFuture<ResponseObject> login(@RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
+        return iFaceRecodeService.loginFaceID(file);
     }
 
     @GetMapping("/profile")
@@ -96,4 +106,31 @@ public class AuthenticationController {
         System.out.println(googleLoginRequest);
         return authenticationService.loginByGoogle(googleLoginRequest);
     }
+
+    @GetMapping("/get-all")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @Operation(summary = "lay tat ca nguoi dung co tren he thong (ADMIN)")
+    public CompletableFuture<ResponseObject> getAll() {
+        return authenticationService.GetAll();
+    }
+
+    @PutMapping("/edit")
+    @Operation(summary = "sua thong tin tai khoan (ALL ROLE)")
+    public String edit(@RequestBody UserRespone userRespone) throws AccountNotFoundException {
+        return authenticationService.edit(userRespone);
+    }
+
+    @PutMapping("/edit/{id}/{type}")
+    @Operation(summary = "thay doi thong tim name & phone (ALL ROLE)")
+    public CompletableFuture<ResponseObject> edit(@PathVariable("id") String id, @PathVariable("type")TypeEditUser typeEditUser, String content) {
+        return authenticationService.editUserInfor(id, typeEditUser, content);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "khoa va mo khoa tai khoan voi id user hop le (ADMIN)")
+    public String delete(@PathVariable("id") String id) throws AccountNotFoundException {
+        return authenticationService.delete(id);
+    }
+
+
 }

@@ -1,38 +1,41 @@
 package com.gymsystem.cyber.service;
 
+
+import com.gymsystem.cyber.entity.User;
+import com.gymsystem.cyber.enums.UserRole;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import com.gymsystem.cyber.IService.IAuthentication;
-import com.gymsystem.cyber.entity.User;
-
-import com.gymsystem.cyber.enums.UserRole;
+import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.exception.AuthException;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
+import com.gymsystem.cyber.model.Request.TypeEditUser;
 import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.LoginReponse;
+import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
+import com.gymsystem.cyber.repository.MembershipPlansRepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
-import com.gymsystem.cyber.utils.AccountUtils;
-
 import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
-import com.gymsystem.cyber.model.Request.RegisterRequestPT;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.security.auth.login.AccountNotFoundException;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
 
@@ -48,19 +51,25 @@ public class AuthenticationService implements IAuthentication {
 
     private final TrainerRepository trainerRepository;
 
+    private final MembershipPlansRepository membershipPlansRepository;
+
+
+//    private final AccountUtils accountUtils;
 
     @Autowired
     public AuthenticationService(AuthenticationRepository authenticationRepository,
                                  TokenService tokenService,
                                  PasswordEncoder passwordEncoder,
-                                 TrainerRepository trainerRepository
+                                 TrainerRepository trainerRepository, MembershipPlansRepository membershipPlansRepository
+//            ,AccountUtils accountUtils
+
     ) {
         this.authenticationRepository = authenticationRepository;
         this.tokenService = tokenService;
         this.passwordEncoder = passwordEncoder;
         this.trainerRepository = trainerRepository;
+        this.membershipPlansRepository = membershipPlansRepository;
     }
-
 
     @Override
     @Async
@@ -118,7 +127,8 @@ public class AuthenticationService implements IAuthentication {
 //                    .phone(registerRequest.getPhone() == null ? "" : registerRequest.getPhone())
                     .enable(true)
                     .password(passwordEncoder.encode(registerRequest.getPassword()))
-                    .build();
+                    .deleted(false).build();
+
 
             authenticationRepository.saveAndFlush(user);
 
@@ -169,10 +179,8 @@ public class AuthenticationService implements IAuthentication {
                         .email(email)
                         .name(firebaseToken.getName())
                         .role(UserRole.USER)
-                        .build();
-
+                        .enable(true).deleted(false).build();
                 authenticationRepository.saveAndFlush(newUser);
-
                 return ResponseObject.builder()
                         .httpStatus(HttpStatus.OK)
                         .data(LoginReponse.builder()
@@ -188,6 +196,88 @@ public class AuthenticationService implements IAuthentication {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> GetAll() {
+        List<User> users = authenticationRepository.findAll();
+        List<UserRespone> accountResponses = new ArrayList<>();
+
+        for (User user : users) {
+            String planName = "No Plan";
+
+            if (user.getMembers() != null)
+                planName = user.getMembers().getSubscriptions().getMemberShipPlans().getName();
+
+            accountResponses.add(UserRespone.builder()
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .role(user.getRole())
+                    .phone(user.getPhone())
+                    .id(user.getId())
+                    .enable(user.isEnable())
+                    .plan(planName)
+                    .build());
+        }
+
+        return CompletableFuture.supplyAsync(() -> ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .data(accountResponses)
+                .message("Get all successfully!")
+                .build());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String edit(UserRespone userRespone) throws AccountNotFoundException {
+        User user = authenticationRepository.findById(userRespone.getId()).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        user.setName(userRespone.getName());
+        user.setEmail(userRespone.getEmail());
+        user.setPhone(userRespone.getPhone());
+        user.setEnable(userRespone.isEnable());
+        user.setRole(userRespone.getRole());
+        authenticationRepository.saveAndFlush(user);
+        return "Success";
+    }
+
+    @Override
+    public String delete(String id) throws AccountNotFoundException {
+        User user = authenticationRepository.findById(id).orElseThrow(() -> new AccountNotFoundException("Account does not exist"));
+        ;
+        user.setEnable(!user.isEnable());
+        authenticationRepository.saveAndFlush(user);
+        return "Success";
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> editUserInfor(String id, TypeEditUser typeEditUser, String content) {
+
+        User user = authenticationRepository.findById(id).orElseThrow(() -> new RuntimeException("Account does not exist"));
+        if (!user.isEnable()) {
+            throw new UsernameNotFoundException("Account is not enabled!");
+        }
+        if (user.isDeleted()) {  // Kiểm tra đúng logic
+            throw new UsernameNotFoundException("Account is deleted!");
+        }
+
+        switch (typeEditUser) {
+            case Name -> user.setName(content);
+            case Phone -> {
+                if (!content.matches("\\d{10,15}")) {
+                    throw new IllegalArgumentException("Phone number must be between 10 and 15 digits and contain only numbers.");
+                }
+                user.setPhone(content);
+            }
+            default -> throw new UsernameNotFoundException("Invalid type edit!");
+        }
+        authenticationRepository.saveAndFlush(user);
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .message("edit successfully!")
+                .data(true)
+                .httpStatus(HttpStatus.OK)
+                .build());
     }
 
     @Transactional
@@ -207,7 +297,7 @@ public class AuthenticationService implements IAuthentication {
                     .role(UserRole.USER)
                     .enable(true)
                     .verificationCode(UUID.randomUUID().toString())
-                    .build();
+                    .deleted(false).build();
 
             // Lưu tài khoản vào cơ sở dữ liệu
             try {
@@ -239,4 +329,6 @@ public class AuthenticationService implements IAuthentication {
                     .build();
         });
     }
+
+
 }

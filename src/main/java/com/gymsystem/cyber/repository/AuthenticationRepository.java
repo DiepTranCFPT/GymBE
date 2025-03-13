@@ -4,10 +4,13 @@ import com.gymsystem.cyber.entity.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
+
 
 public interface AuthenticationRepository extends JpaRepository<User, String> {   // dua ra daatabase
     User findByEmailAndRole(String email, String role);
+
 
 //    User findByEmail(String email);
 
@@ -22,8 +25,15 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByName(String name);
+
+
     Optional<User> findById(String id);
 
     Optional<User> findByFirebaseUid(String firebase);
+
+    List<User> findByAvataIsNotNull();
+
+
 
 }
