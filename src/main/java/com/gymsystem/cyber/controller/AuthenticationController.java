@@ -3,19 +3,17 @@ package com.gymsystem.cyber.controller;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
-import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
-import com.gymsystem.cyber.model.Request.RegisterRequest;
-import com.gymsystem.cyber.model.Request.TypeEditUser;
+import com.gymsystem.cyber.model.Request.*;
 import com.gymsystem.cyber.model.Response.AccountResponse;
 import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
-import com.gymsystem.cyber.model.Request.LoginRequest;
 import com.gymsystem.cyber.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.ui.Model;
@@ -131,6 +129,26 @@ public class AuthenticationController {
     public String delete(@PathVariable("id") String id) throws AccountNotFoundException {
         return authenticationService.delete(id);
     }
+    @PostMapping("/forgot-password")
+    public void forgotpassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) throws AccountNotFoundException {
+        authenticationService.forgotPassword(forgotPasswordRequest);
+    }
 
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam("token") String token, @RequestBody ResetPasswordRequest resetPasswordRequest) throws AccountNotFoundException {
+
+        if (authenticationService.resetPassword(resetPasswordRequest) == 1) {
+            if (token.equals(resetPasswordRequest.getToken())) {
+                return ResponseEntity.ok("Success");
+
+            } else {
+                return ResponseEntity.ok("fail");
+
+            }
+
+        }
+        return null;
+    }
 
 }
