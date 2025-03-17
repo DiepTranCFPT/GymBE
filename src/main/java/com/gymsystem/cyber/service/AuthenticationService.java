@@ -89,28 +89,32 @@ public class AuthenticationService implements IAuthentication {
                     if (!user1.isEnable()) {
                         throw new UsernameNotFoundException("Account is not enabled!");
                     }
-                    if (!passwordEncoder.matches(loginRequest.getPassword(), user1.getPassword()))
-                        throw new UsernameNotFoundException("Incorrect password!");
                     return user1;
                 })
                 .orElseThrow(() -> new UsernameNotFoundException("Account is not exists!"));
 
+        if (user.getPassword() == null) {
+            throw new UsernameNotFoundException("Password is not exists!");
+        }
 
-        return CompletableFuture.supplyAsync(() -> {
+        if (passwordEncoder.matches(user.getPassword(), loginRequest.getPassword())) {
+            throw new UsernameNotFoundException("Password does not match!");
+        }
 
-            LoginReponse accountResponse = LoginReponse.builder()
-                    .name(user.getName())
-                    .token(tokenService.generateToken(user))
-                    .phone(user.getPhone() == null ? "" : user.getPhone())
-                    .email(user.getEmail())
-                    .id(user.getId())
-                    .build();
-            return ResponseObject.builder()
-                    .data(accountResponse)
-                    .message("Login successful")
-                    .httpStatus(HttpStatus.OK)
-                    .build();
-        });
+        LoginReponse accountResponse = LoginReponse.builder()
+                .name(user.getName())
+                .token(tokenService.generateToken(user))
+                .phone(user.getPhone() == null ? "" : user.getPhone())
+                .email(user.getEmail())
+                .id(user.getId())
+                .build();
+
+
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .data(accountResponse)
+                .message("Login successful")
+                .httpStatus(HttpStatus.OK)
+                .build());
     }
 
     @Transactional

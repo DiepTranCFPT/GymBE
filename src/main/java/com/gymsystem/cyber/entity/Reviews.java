@@ -2,7 +2,9 @@ package com.gymsystem.cyber.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -14,6 +16,8 @@ import java.util.List;
 @Table(name = "reviews")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Reviews {
 
     @Id
@@ -32,5 +36,7 @@ public class Reviews {
 
     @OneToMany(mappedBy = "reviews")
     private List<SchedulesIO> schedulesIO;
+
+    private boolean deleted = false;
 
 }
