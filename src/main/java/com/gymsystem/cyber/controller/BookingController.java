@@ -54,7 +54,7 @@ public class BookingController {
     }
 
     @PostMapping("/trainner")
-    public ResponseObject regisPTBySchedule(@RequestParam PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException {
+    public ResponseObject regisPTBySchedule(@RequestBody PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException {
         return memberService.regisPTForSchedule(pTscheduleRequest);
     }
 

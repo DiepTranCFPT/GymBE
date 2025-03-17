@@ -2,7 +2,8 @@ package com.gymsystem.cyber.iService;
 
 import com.gymsystem.cyber.model.Request.ReviewRequest;
 import com.gymsystem.cyber.model.ResponseObject;
-import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 
 public interface IReviewService {
@@ -19,5 +20,6 @@ public interface IReviewService {
 
     // DELETE: Xóa review
     ResponseObject deleteReview(String reviewId);
+
 
 }

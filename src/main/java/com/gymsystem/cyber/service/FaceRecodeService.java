@@ -2,6 +2,7 @@ package com.gymsystem.cyber.service;
 
 import com.gymsystem.cyber.entity.Members;
 import com.gymsystem.cyber.entity.SchedulesIO;
+import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.model.Response.FaceReposi;
@@ -9,6 +10,7 @@ import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.MemberRepository;
 import com.gymsystem.cyber.repository.ScheduleIORepository;
+import com.gymsystem.cyber.repository.TrainerRepository;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.global.opencv_core;
@@ -45,12 +47,14 @@ public class FaceRecodeService implements IFaceRecodeService {
     private final ScheduleIORepository scheduleIORepository;
     private final MemberRepository memberRepository;
     private List<User> users;
+    private final TrainerRepository trainerRepository;
 
     @Autowired
-    public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository) {
+    public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository, TrainerRepository trainerRepository) {
         this.authenticationRepository = authenticationRepository;
         this.scheduleIORepository = scheduleIORepository;
         this.memberRepository = memberRepository;
+        this.trainerRepository = trainerRepository;
 
         try {
             Loader.load(org.bytedeco.opencv.global.opencv_highgui.class);
@@ -176,60 +180,78 @@ public class FaceRecodeService implements IFaceRecodeService {
             double similarityScore = compareFeatures(inputFeatures, storedFeatures);
             if (similarityScore > 0.65) {
 
-                Optional<Members> members = memberRepository.findByUser_Id(user.getId());
-                if (!members.isPresent()) {
-                    return CompletableFuture.completedFuture(
-                            new ResponseObject("Tài khoản chưa đăng ký thành viên", HttpStatus.OK, ""));
-                }
+                if (user.getRole().equals(UserRole.PT) && !user.getTrainer().isLocked()) {
 
-                Members member = members.get();
-                if (member.isExprire() || (member.getExpireDate() != null && member.getExpireDate().isBefore(now))) {
-                    return CompletableFuture.completedFuture(
-                            new ResponseObject("Checkin thất bại! Gói Membership đã hết hạn.", HttpStatus.BAD_REQUEST, null));
-                }
 
-                List<SchedulesIO> schedules = scheduleIORepository.findAllByMembers_Id(member.getId());
+                    boolean stt = user.getTrainer().isStatus();
+                    user.getTrainer().setStatus(!stt);
+                    trainerRepository.saveAndFlush(user.getTrainer());
 
-                for (SchedulesIO schedule : schedules) {
-                    // Chỉ xét lịch có ngày trùng với hôm nay
-                    if (!schedule.getDate().toLocalDate().isEqual(now.toLocalDate())) {
-                        continue;
-                    }
+                } else if (user.getRole().equals(UserRole.USER)) {
 
-                    LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);  // Giờ bắt đầu ( 6 )
-                    LocalDateTime endTime = startTime.plusHours(schedule.getTime());  // Giờ kết thúc
-
-                    // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
-                    if (!now.isBefore(startTime) && now.isBefore(endTime)) {
-                        schedule.setTimeCheckin(now);
-                        schedule.setStatus(true);
-                        scheduleIORepository.save(schedule);
-                        validSchedule = true;
-                        break;
-                    } else {
-                        String errorMessage = String.format("Checkin thất bại! Gói dịch vụ: %s chỉ được checkin từ %s đến %s.",
-                                member.getName(),
-                                startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-
+                    Optional<Members> members = memberRepository.findByUser_Id(user.getId());
+                    if (!members.isPresent()) {
                         return CompletableFuture.completedFuture(
-                                new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
+                                new ResponseObject("Tài khoản chưa đăng ký thành viên", HttpStatus.OK, ""));
                     }
-                }
+
+                    Members member = members.get();
+                    if (member.isExprire() || (member.getExpireDate() != null && member.getExpireDate().isBefore(now))) {
+                        return CompletableFuture.completedFuture(
+                                new ResponseObject("Checkin thất bại! Gói Membership đã hết hạn.", HttpStatus.BAD_REQUEST, null));
+                    }
+
+                    List<SchedulesIO> schedules = scheduleIORepository.findAllByMembers_Id(member.getId());
+
+                    for (SchedulesIO schedule : schedules) {
+                        // Chỉ xét lịch có ngày trùng với hôm nay
+                        if (!schedule.getDate().toLocalDate().isEqual(now.toLocalDate())) {
+                            continue;
+                        }
+
+                        LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);  // Giờ bắt đầu ( 6 )
+                        LocalDateTime endTime = startTime.plusHours(schedule.getTime());  // Giờ kết thúc
+
+                        // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
+                        if (!now.isBefore(startTime) && now.isBefore(endTime)) {
+                            if (schedule.getTimeCheckin() == null) {
+                                schedule.setTimeCheckin(now);
+                                schedule.setStatus(true);
+                                scheduleIORepository.save(schedule);
+                                validSchedule = true;
+                                break;
+                            } else {
+                                schedule.setTimeCheckout(now);
+                                schedule.setStatus(false);
+                                scheduleIORepository.save(schedule);
+                                validSchedule = false;
+                            }
+
+                        } else {
+                            String errorMessage = String.format("Checkin thất bại! Gói dịch vụ: %s chỉ được checkin từ %s đến %s.",
+                                    member.getName(),
+                                    startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+
+                            return CompletableFuture.completedFuture(
+                                    new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
+                        }
+                    }
 
 
-                if (!validSchedule) {
+                    if (!validSchedule) {
+                        return CompletableFuture.completedFuture(
+                                new ResponseObject("Không nằm trong thời gian tập luyện!", HttpStatus.BAD_REQUEST, null));
+                    }
+
+                    FaceReposi faceReposi = FaceReposi.builder()
+                            .name(user.getId())
+                            .goiTap(member.getName())
+                            .build();
+
                     return CompletableFuture.completedFuture(
-                            new ResponseObject("Không nằm trong thời gian tập luyện!", HttpStatus.BAD_REQUEST, null));
+                            new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
                 }
-
-                FaceReposi faceReposi = FaceReposi.builder()
-                        .name(user.getId())
-                        .goiTap(member.getName())
-                        .build();
-
-                return CompletableFuture.completedFuture(
-                        new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
             }
         }
 

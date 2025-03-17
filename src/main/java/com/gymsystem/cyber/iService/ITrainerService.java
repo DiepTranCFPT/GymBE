@@ -3,6 +3,7 @@ package com.gymsystem.cyber.iService;
 import com.gymsystem.cyber.model.Request.TrainerRequest;
 import com.gymsystem.cyber.model.ResponseObject;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -44,5 +45,13 @@ public interface ITrainerService {
 
 //    // Tìm Trainer theo User
 //    Trainer findTrainerByUser(User user);
+
+
+    /**
+     * lay danh sach PT ranh vao ngay duoc truyen vao
+     * @param localDate
+     * @return
+     */
+    CompletableFuture<ResponseObject> GetAllPTFreeTimeInDay(LocalDate localDate);
 
 }

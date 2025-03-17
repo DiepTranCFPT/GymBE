@@ -1,14 +1,17 @@
 package com.gymsystem.cyber.service;
 
 
+import com.gymsystem.cyber.entity.SchedulesIO;
 import com.gymsystem.cyber.entity.Trainer;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.iService.ITrainerService;
 import com.gymsystem.cyber.model.Request.TrainerRequest;
+import com.gymsystem.cyber.model.Response.PtRepo;
 import com.gymsystem.cyber.model.Response.TrainerReponse;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
+import com.gymsystem.cyber.repository.ScheduleIORepository;
 import com.gymsystem.cyber.repository.TrainerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,8 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class TrainerService implements ITrainerService {
@@ -27,11 +35,13 @@ public class TrainerService implements ITrainerService {
 
     private final TrainerRepository trainerRepository;
     private final AuthenticationRepository authenticationRepository;
+    private final ScheduleIORepository scheduleIORepository;
 
     @Autowired
-    public TrainerService(TrainerRepository trainerRepository, AuthenticationRepository authenticationRepository) {
+    public TrainerService(TrainerRepository trainerRepository, AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository) {
         this.trainerRepository = trainerRepository;
         this.authenticationRepository = authenticationRepository;
+        this.scheduleIORepository = scheduleIORepository;
     }
 
 
@@ -96,17 +106,14 @@ public class TrainerService implements ITrainerService {
     @Async
     public CompletableFuture<ResponseObject> creatTrainer(TrainerRequest trainerRequest, String emailUser) {
 
-        // Tìm user theo email và kiểm tra trạng thái
         User user = authenticationRepository.findByEmail(emailUser)
                 .filter(u -> !u.isDeleted() && u.isEnable())
                 .orElseThrow(() -> new UsernameNotFoundException("User not exist or deleted, is not enabled"));
 
-        // Kiểm tra xem user đã là trainer chưa
         if (user.getTrainer() != null) {
             throw new UsernameNotFoundException("Trainer already exists!");
         }
 
-        // Cập nhật role
         user.setRole(UserRole.PT);
         authenticationRepository.save(user);
 
@@ -160,6 +167,38 @@ public class TrainerService implements ITrainerService {
                     .message("Update lock trainer successfully!")
                     .build();
         });
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> GetAllPTFreeTimeInDay(LocalDate localDate) {
+        Set<String> busyTrainerIds = scheduleIORepository.findAllByDateBetween(
+                        localDate.atStartOfDay(), localDate.atTime(LocalTime.MAX))
+                .stream()
+                .map(SchedulesIO::getTrainer)
+                .filter(Objects::nonNull)
+                .map(Trainer::getId)
+                .collect(Collectors.toSet());
+
+        List<Trainer> freeTrainers = trainerRepository.findAllActive()
+                .stream()
+                .filter(trainer -> !busyTrainerIds.contains(trainer.getId()))
+                .collect(Collectors.toList());
+
+        List<PtRepo> ptRepos = freeTrainers.stream()
+                .map(trainer -> PtRepo.builder()
+                        .kn(trainer.getExperience_year())
+                        .id(trainer.getId())
+                        .email(trainer.getUser().getEmail())
+                        .name(trainer.getUser().getName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .data(ptRepos)
+                .httpStatus(HttpStatus.OK)
+                .message("Get trainer free")
+                .build());
     }
 
 

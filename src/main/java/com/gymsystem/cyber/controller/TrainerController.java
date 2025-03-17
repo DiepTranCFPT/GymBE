@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -56,5 +57,12 @@ public class TrainerController {
     public CompletableFuture<ResponseObject> deletedTrainer(@PathVariable("id") String id) {
         return trainerService.deleteTrainer(id);
     }
+
+    @GetMapping("/trainer/{day}")
+    @Operation(summary = "lay pt ranh voi ngay (2025-01-01)")
+    public CompletableFuture<ResponseObject> getTrainerByDay(@PathVariable(value = "day") LocalDate day) {
+        return trainerService.GetAllPTFreeTimeInDay(day);
+    }
+
 
 }
