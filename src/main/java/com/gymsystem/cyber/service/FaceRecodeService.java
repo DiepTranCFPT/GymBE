@@ -10,6 +10,7 @@ import com.gymsystem.cyber.repository.AuthenticationRepository;
 import com.gymsystem.cyber.repository.MemberRepository;
 import com.gymsystem.cyber.repository.ScheduleIORepository;
 import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
@@ -20,7 +21,6 @@ import org.bytedeco.opencv.opencv_objdetect.CascadeClassifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,47 +30,68 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 public class FaceRecodeService implements IFaceRecodeService {
 
+
     private final AuthenticationRepository authenticationRepository;
-    private final CascadeClassifier faceDetector;
+    private CascadeClassifier faceDetector;
     private final ScheduleIORepository scheduleIORepository;
     private final MemberRepository memberRepository;
     private List<User> users;
 
+    @Autowired
     public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository) {
         this.authenticationRepository = authenticationRepository;
         this.scheduleIORepository = scheduleIORepository;
         this.memberRepository = memberRepository;
 
-        users = authenticationRepository.findByAvataIsNotNull();
         try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("haarcascade_frontalface_default.xml");
+            Loader.load(org.bytedeco.opencv.global.opencv_highgui.class);
+            Loader.load(org.bytedeco.opencv.global.opencv_objdetect.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi tải thư viện OpenCV native!", e);
+        }
+
+        // Load cascade classifier
+        this.faceDetector = loadCascadeClassifier();
+        if (faceDetector == null || faceDetector.empty()) {
+            throw new RuntimeException("CascadeClassifier không thể khởi tạo hoặc file bị rỗng.");
+        }
+    }
+
+    private CascadeClassifier loadCascadeClassifier() {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("haarcascade_frontalface_default.xml")) {
             if (inputStream == null) {
                 throw new IOException("Không tìm thấy file haarcascade_frontalface_default.xml trong resources!");
             }
-            File tempFile = File.createTempFile("cascade_", ".xml");
-            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            this.faceDetector = new CascadeClassifier(tempFile.getAbsolutePath());
 
-            // Kiểm tra nếu faceDetector không được khởi tạo thành công
-            if (this.faceDetector.empty()) {
+            // Tạo file tạm để CascadeClassifier sử dụng
+            File tempFile = File.createTempFile("cascade_", ".xml");
+            tempFile.deleteOnExit(); // Xóa file tạm khi JVM thoát
+
+            // Sao chép nội dung từ InputStream vào file tạm
+            Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println("Loading CascadeClassifier from temp file: " + tempFile.getAbsolutePath()); // Debug
+
+            // Khởi tạo CascadeClassifier từ file tạm
+            CascadeClassifier classifier = new CascadeClassifier(tempFile.getAbsolutePath());
+            if (classifier == null || classifier.empty()) {
                 throw new IOException("Không thể tải mô hình Haar Cascade!");
             }
-            tempFile.deleteOnExit();
+
+            return classifier;
         } catch (IOException e) {
-            // Log lỗi để dễ dàng kiểm tra nguyên nhân
-            System.err.println("Lỗi khi khởi tạo faceDetector: " + e.getMessage());
-            throw new RuntimeException("Khởi tạo faceDetector thất bại: " + e.getMessage(), e);
+            e.printStackTrace();
+            throw new RuntimeException("Khởi tạo faceDetector thất bại", e);
         }
     }
 

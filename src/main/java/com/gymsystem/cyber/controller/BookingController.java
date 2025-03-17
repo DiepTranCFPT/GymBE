@@ -53,7 +53,7 @@ public class BookingController {
         return memberService.regisPTForUser(pTforUserRequest);
     }
 
-    @PostMapping("/regis-pt")
+    @PostMapping("/trainner")
     public ResponseObject regisPTBySchedule(@RequestParam PTscheduleRequest pTscheduleRequest) throws AccountNotFoundException {
         return memberService.regisPTForSchedule(pTscheduleRequest);
     }

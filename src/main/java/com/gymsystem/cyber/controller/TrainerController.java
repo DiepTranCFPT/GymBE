@@ -43,15 +43,14 @@ public class TrainerController {
         return trainerService.getAllTrains();
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/trainer/{id}")
     @Operation(summary = "lau Pt voi id", description = "only admin")
     public CompletableFuture<ResponseObject> getTrainerbyId(@PathVariable(value = "id") String id) {
         return trainerService.getTrainerById(id);
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/trainer-lock/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "lock Pt voi id", description = "only admin")
     public CompletableFuture<ResponseObject> deletedTrainer(@PathVariable("id") String id) {

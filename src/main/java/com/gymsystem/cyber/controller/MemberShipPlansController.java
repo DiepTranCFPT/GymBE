@@ -23,7 +23,7 @@ public class MemberShipPlansController {
         this.membershipPlansService = membershipPlansService;
     }
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PostMapping("/add-plan")
+    @PostMapping
     @Operation(summary = "tao moi menberplan (ADMIN)")
     public CompletableFuture<ResponseObject> addMembershipPlan(@RequestBody PlansRequest membershipPlanRequest) {
         return membershipPlansService.addMembershipPlan(membershipPlanRequest);
@@ -35,7 +35,7 @@ public class MemberShipPlansController {
         return membershipPlansService.getMembershipPlans();
     }
 
-    @GetMapping("/mb-plan/{id}")
+    @GetMapping("/member/{id}")
     @Operation(summary = "lay memberplan voi id tuong ung")
     public CompletableFuture<ResponseObject> getMembershipPlan(String id) {
         return membershipPlansService.getMembershipPlan(id);

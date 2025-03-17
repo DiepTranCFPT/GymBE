@@ -24,7 +24,8 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "account", indexes = {@Index(name = "idx_email", columnList = "email"),
         @Index(name = "idx_Uid", columnList = "firebaseUid"),
-        @Index(name = "idx_phone", columnList = "phone")})
+        @Index(name = "idx_phone", columnList = "phone")}
+)
 @SuperBuilder
 public class User extends BaseEntity {
 
@@ -63,7 +64,7 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] avata;
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY)
     public Members members;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

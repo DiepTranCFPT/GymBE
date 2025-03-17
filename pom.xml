@@ -40,6 +40,12 @@
         <!--			<artifactId>spring-boot-starter-security</artifactId>-->
         <!--		</dependency>-->
 
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.14.18</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -144,7 +150,6 @@
         </dependency>
 
 
-
         <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -158,7 +163,6 @@
             <version>1.6.0.Beta2</version>
             <scope>provided</scope>
         </dependency>
-
 
 
         <dependency>
@@ -194,21 +198,35 @@
             <artifactId>spring-boot-starter-oauth2-client</artifactId>
         </dependency>
 
-        <!-- OpenCV Dependency -->
-        <dependency>
-            <groupId>org.openpnp</groupId>
-            <artifactId>opencv</artifactId>
-            <version>4.9.0-0</version>
-        </dependency>
+<!--        &lt;!&ndash; OpenCV Dependency &ndash;&gt;-->
+<!--&lt;!&ndash;        <dependency>&ndash;&gt;-->
+<!--&lt;!&ndash;            <groupId>org.openpnp</groupId>&ndash;&gt;-->
+<!--&lt;!&ndash;            <artifactId>opencv</artifactId>&ndash;&gt;-->
+<!--&lt;!&ndash;            <version>4.9.0-0</version>&ndash;&gt;-->
+<!--&lt;!&ndash;        </dependency>&ndash;&gt;-->
 
-        <!-- JavaCV Dependency for native bindings -->
-        <dependency>
-            <groupId>org.bytedeco</groupId>
-            <artifactId>javacpp</artifactId>
-            <version>1.5.10</version>
-        </dependency>
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openpnp/opencv &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openpnp</groupId>-->
+<!--            <artifactId>opencv</artifactId>-->
+<!--            <version>4.3.0-4</version>-->
+<!--        </dependency>-->
 
-        <!-- OpenCV Platform bindings -->
+<!--        &lt;!&ndash; JavaCV Dependency for native bindings &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.bytedeco</groupId>-->
+<!--            <artifactId>javacpp</artifactId>-->
+<!--            <version>1.5.10</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; OpenCV Platform bindings &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.bytedeco</groupId>-->
+<!--            <artifactId>opencv-platform</artifactId>-->
+<!--            <version>4.9.0-1.5.10</version>-->
+<!--        </dependency>-->
+
+        <!-- OpenCV Platform bindings (bao gồm tất cả native libraries) -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>opencv-platform</artifactId>

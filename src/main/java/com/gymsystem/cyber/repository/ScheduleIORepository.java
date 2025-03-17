@@ -5,11 +5,13 @@ import com.gymsystem.cyber.entity.SchedulesIO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String> {
         @Query("SELECT s FROM SchedulesIO s WHERE s.members.id = :membersId")
         List<SchedulesIO> findAllByMembers_Id(@Param("membersId") String membersId);

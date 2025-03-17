@@ -1,22 +1,22 @@
 package com.gymsystem.cyber;
 
 
-import nu.pattern.OpenCV;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
 
 import java.io.IOException;
 
 
 @SpringBootApplication(scanBasePackages = "com.gymsystem.cyber")
 @EntityScan(basePackages = {"com.gymsystem.cyber.entity"})
+@ComponentScan(basePackages = "com.gymsystem")
 public class NewExperessApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(NewExperessApplication.class, args);
         openSwaggerUI();
-        OpenCV.loadLocally();
     }
 
     private static void openSwaggerUI() {

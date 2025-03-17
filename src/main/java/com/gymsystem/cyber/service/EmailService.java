@@ -5,6 +5,7 @@ import com.gymsystem.cyber.model.EmailDetail;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -12,6 +13,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
+import java.util.function.Function;
 
 
 @Service
@@ -128,5 +131,20 @@ public class EmailService {
             System.err.println("Error: " + e.getMessage());
         }
     }
+
+    public void sendMailVerification(String subject, String email,
+                                     String codeVerifi,
+                                     Function<String, String> function) throws MessagingException {
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+
+        message.setFrom(new InternetAddress("swpproject2024@gmail.com"));
+        message.setRecipients(MimeMessage.RecipientType.TO, email);
+        message.setSubject(subject);
+
+        message.setContent(function.apply(email), "text/html; charset=utf-8");
+        javaMailSender.send(message);
+    }
+
 
 }

@@ -3,20 +3,17 @@ package com.gymsystem.cyber.controller;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
-import com.gymsystem.cyber.model.Request.*;
-import com.gymsystem.cyber.model.Response.AccountResponse;
+import com.gymsystem.cyber.model.Request.RegisterRequest;
+import com.gymsystem.cyber.model.Request.TypeEditUser;
 import com.gymsystem.cyber.model.Response.UserRespone;
 import com.gymsystem.cyber.model.ResponseObject;
-import com.gymsystem.cyber.service.UserService;
+import com.gymsystem.cyber.model.Request.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @CrossOrigin("*")
-@RequestMapping("api/authen")
+@RequestMapping("api/users")
 @Tag(name = "User Controller", description = "Quản lý các hoạt động người dùng như tạo mới, cập nhật, xóa, xác minh, v.v.")
 public class AuthenticationController {
 
@@ -39,15 +36,16 @@ public class AuthenticationController {
     private final IFaceRecodeService iFaceRecodeService;
 
     @Autowired
-    public AuthenticationController(IAuthentication authenticationService, IFaceRecodeService iFaceRecodeService) {
+    public AuthenticationController(IAuthentication authenticationService
+                                    ,IFaceRecodeService iFaceRecodeService
+    ) {
         this.authenticationService = authenticationService;
         this.iFaceRecodeService = iFaceRecodeService;
     }
 
 
     @Operation(summary = "Tạo người dùng mới", description = "Đăng ký một người dùng mới với thông tin đã cung cấp.")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    @PostMapping("/register")
+    @PostMapping
     public CompletableFuture<ResponseObject> regisAcount(@RequestBody RegisterRequest registerRequest) throws AccountNotFoundException {
         return authenticationService.register(registerRequest);
     }
@@ -76,36 +74,15 @@ public class AuthenticationController {
         return iFaceRecodeService.regisFaceIDforAccount(id, file);
     }
 
-    @PostMapping(value = "face-login", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+    @PostMapping(value = "face", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE})
     @Operation(summary = "login faceid")
     public CompletableFuture<ResponseObject> login(@RequestParam("file") MultipartFile file) throws AccountNotFoundException, IOException {
         return iFaceRecodeService.loginFaceID(file);
     }
 
-    @GetMapping("/profile")
-    @Operation(summary = "đang nhap (moi quyen)")
-    public String profile(OAuth2AuthenticationToken token, Model model) {
-        model.addAttribute("name", token.getPrincipal().getAttribute("name"));
-        model.addAttribute("email", token.getPrincipal().getAttribute("email"));
-        model.addAttribute("photo", token.getPrincipal().getAttribute("picture"));
-        System.out.println("token.getPrincipal().getAttribute()");
-        return "user-profile";
-    }
 
-    @GetMapping("/signup-with-google")
-    @Operation(summary = "đang nhap (moi quyen)")
-    public CompletableFuture<ResponseObject> signupWithGoogle(OAuth2AuthenticationToken authenticationToken) throws AccountNotFoundException {
-        Map<String, Object> attributes = authenticationToken.getPrincipal().getAttributes();
-        LoginGoogleRequest googleLoginRequest = new LoginGoogleRequest();
-        googleLoginRequest.setEmail((String) attributes.get("email"));
-        googleLoginRequest.setName((String) attributes.get("name"));
-        System.out.println("hihihihihi");
-        System.out.println(googleLoginRequest);
-        return authenticationService.loginByGoogle(googleLoginRequest);
-    }
-
-    @GetMapping("/get-all")
+    @GetMapping("/all")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @Operation(summary = "lay tat ca nguoi dung co tren he thong (ADMIN)")
     public CompletableFuture<ResponseObject> getAll() {
@@ -120,7 +97,7 @@ public class AuthenticationController {
 
     @PutMapping("/edit/{id}/{type}")
     @Operation(summary = "thay doi thong tim name & phone (ALL ROLE)")
-    public CompletableFuture<ResponseObject> edit(@PathVariable("id") String id, @PathVariable("type")TypeEditUser typeEditUser, String content) {
+    public CompletableFuture<ResponseObject> edit(@PathVariable("id") String id, @PathVariable("type") TypeEditUser typeEditUser, String content) {
         return authenticationService.editUserInfor(id, typeEditUser, content);
     }
 
@@ -129,26 +106,17 @@ public class AuthenticationController {
     public String delete(@PathVariable("id") String id) throws AccountNotFoundException {
         return authenticationService.delete(id);
     }
-    @PostMapping("/forgot-password")
-    public void forgotpassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) throws AccountNotFoundException {
-        authenticationService.forgotPassword(forgotPasswordRequest);
+
+    @PostMapping("/sendmail/{email}")
+    @Operation(summary = "gui ma xac nhan ve email")
+    public CompletableFuture<ResponseObject> sendMail(@PathVariable("email") String email) {
+        return authenticationService.sendCode(email);
     }
 
-    @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(
-            @RequestParam("token") String token, @RequestBody ResetPasswordRequest resetPasswordRequest) throws AccountNotFoundException {
-
-        if (authenticationService.resetPassword(resetPasswordRequest) == 1) {
-            if (token.equals(resetPasswordRequest.getToken())) {
-                return ResponseEntity.ok("Success");
-
-            } else {
-                return ResponseEntity.ok("fail");
-
-            }
-
-        }
-        return null;
+    @PutMapping("/sendmail/{email}/{code}")
+    @Operation(summary = "gui ma xac nhan va password ")
+    public CompletableFuture<ResponseObject> sendMail(@PathVariable("email") String email, @PathVariable("code") String code, @RequestBody String newPassword) {
+        return CompletableFuture.completedFuture(authenticationService.changePassword(email, code, newPassword));
     }
 
 }

@@ -19,11 +19,11 @@ public class ScheduleController {
         this.iScheduleService = iScheduleService;
     }
 
-    @GetMapping("getScheduleByUser")
+    @GetMapping("getSchedule")
     public CompletableFuture<ResponseObject> getScheduleByUser(){
        return iScheduleService.getSchedule();
     }
-    @GetMapping("getScheduleInDay")
+    @GetMapping("getSchedule-day")
     public CompletableFuture<ResponseObject> getScheduleInDay(){
         return iScheduleService.getScheduleinDay();
     }
