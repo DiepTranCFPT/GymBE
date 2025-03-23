@@ -4,6 +4,7 @@ package com.gymsystem.cyber.controller;
 import com.gymsystem.cyber.iService.ISchedulesIOService;
 import com.gymsystem.cyber.model.ResponseObject;
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,5 +38,12 @@ public class SchedulesIOControler {
         return iSchedulesIOService.getListCategoryPtDate(id, date);
     }
 
+
+    @GetMapping("/category/total/{date}")
+    @Operation(summary = "lay lich theo tung category (ADMIN) (2025-05-24)")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public CompletableFuture<ResponseObject> getTotalCategoryPt(@PathVariable("date") LocalDate localDate) {
+        return iSchedulesIOService.getScheduleByDateTime(localDate);
+    }
 
 }

@@ -4,6 +4,8 @@ import com.gymsystem.cyber.entity.Members;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import com.gymsystem.cyber.entity.User;
 import com.gymsystem.cyber.iService.ISchedulesIOService;
+import com.gymsystem.cyber.model.Response.BaseUser;
+import com.gymsystem.cyber.model.Response.CalendarTotal;
 import com.gymsystem.cyber.model.Response.SchedulesIORepo;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.AuthenticationRepository;
@@ -76,8 +78,35 @@ public class SchedulesIOService implements ISchedulesIOService {
     @Override
     @Transactional
     public CompletableFuture<ResponseObject> getScheduleByDateTime(LocalDate dateTime) {
-        return null;
+        List<SchedulesIO> schedulesIOS = scheduleIORepository.findAllByDateBetween(
+                        dateTime.withDayOfMonth(1).atTime(6, 0),
+                        dateTime.withDayOfMonth(dateTime.lengthOfMonth()).atTime(21, 0)
+                ).stream()
+                .filter(schedulesIO -> schedulesIO.getTimeCheckin() != null)
+                .collect(Collectors.toList());
+
+        // Chuyển đổi thành CalendarTotal
+        List<CalendarTotal> calendarTotals = schedulesIOS.stream()
+                .map(schedulesIO -> CalendarTotal.builder()
+                        .localDate(schedulesIO.getDate().toLocalDate())
+                        .baseUsers(List.of(BaseUser.builder()
+                                .id(schedulesIO.getMembers().getUser().getId())
+                                .Checkin(schedulesIO.getTimeCheckin().toLocalTime())
+                                .Checkout(schedulesIO.getTimeCheckout() != null
+                                        ? schedulesIO.getTimeCheckout().toLocalTime()
+                                        : null)
+                                .ptMail(schedulesIO.getTrainer() != null ? schedulesIO.getTrainer().getUser().getEmail() : "")
+                                .build()))
+                        .build())
+                .collect(Collectors.toList());
+
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .message("List total User in: " + dateTime)
+                .data(calendarTotals)
+                .httpStatus(HttpStatus.OK)
+                .build());
     }
+
 
     @Override
     public CompletableFuture<ResponseObject> getUserUserInM() {

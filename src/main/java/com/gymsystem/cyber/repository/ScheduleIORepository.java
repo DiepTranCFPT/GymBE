@@ -35,4 +35,6 @@ public interface ScheduleIORepository extends JpaRepository<SchedulesIO, String>
             String membersUserId, LocalDateTime dateAfter, LocalDateTime dateBefore);
 
     List<SchedulesIO> findAllByTrainer_IdAndDateBetween(String trainerId, LocalDateTime dateAfter, LocalDateTime dateBefore);
+
+
 }
