@@ -58,11 +58,9 @@ public class TrainerController {
         return trainerService.deleteTrainer(id);
     }
 
-    @GetMapping("/trainer/{day}")
+    @GetMapping("/trainer/free/{day}")
     @Operation(summary = "lay pt ranh voi ngay (2025-01-01)")
     public CompletableFuture<ResponseObject> getTrainerByDay(@PathVariable(value = "day") LocalDate day) {
         return trainerService.GetAllPTFreeTimeInDay(day);
     }
-
-
 }

@@ -58,11 +58,17 @@ public class BookingController {
         return memberService.regisPTForSchedule(pTscheduleRequest);
     }
 
-    @GetMapping("/detail-userlist/{id}")
+    @GetMapping("/user-history/{id}")
     @Operation(summary = "lay tat ca cac dich vu ma user da su dung tren he thong")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CompletableFuture<ResponseObject> responseObjectCompletableFuture(@PathVariable("id") String id) {
         return memberService.getMemberByUserId(id);
     }
 
+    @PostMapping("/booking/admin/{email}")
+    @Operation(summary = "admin booking voi id cua user")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public CompletableFuture<ResponseObject> adminBooking(@PathVariable("email") String email, @RequestBody MemberRegistrationRequest memberRegistrationRequest){
+        return memberService.BookingForAdmin(email, memberRegistrationRequest);
+    }
 }

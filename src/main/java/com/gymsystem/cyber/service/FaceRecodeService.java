@@ -32,11 +32,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class FaceRecodeService implements IFaceRecodeService {
@@ -56,6 +59,8 @@ public class FaceRecodeService implements IFaceRecodeService {
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
 
+        loadListUserIsAvata();
+
         try {
             Loader.load(org.bytedeco.opencv.global.opencv_highgui.class);
             Loader.load(org.bytedeco.opencv.global.opencv_objdetect.class);
@@ -70,6 +75,31 @@ public class FaceRecodeService implements IFaceRecodeService {
             throw new RuntimeException("CascadeClassifier không thể khởi tạo hoặc file bị rỗng.");
         }
     }
+
+    @Transactional
+    void loadListUserIsAvata() {
+        if (users == null) users = new ArrayList<>();
+//        var temp = authenticationRepository.findAllActiveUsersWithAvata(LocalDateTime.now().withHour(21).withMinute(0));
+        var temp = authenticationRepository.findAllByAvataIsNotNull();
+
+        temp.forEach(user -> {
+            if (user.getRole().equals(UserRole.PT)) {
+                if (user.getTrainer().isLocked())
+                    return;
+            }
+            users.add(user);
+        });
+
+        int count = users.size();
+    }
+
+
+//    .filter(user -> user.getMembers() != null &&
+//            user.getMembers().getExpireDate().isBefore(LocalDate.now().atTime(21, 0)))
+//            .filter(User::isEnable)
+//                .filter(user -> !user.isDeleted())
+//            .filter(user -> user.getRole().equals(UserRole.PT))
+//            .filter(user -> user.getTrainer() == null || !user.getTrainer().isLocked())
 
     private CascadeClassifier loadCascadeClassifier() {
         try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("haarcascade_frontalface_default.xml")) {
@@ -178,7 +208,7 @@ public class FaceRecodeService implements IFaceRecodeService {
             if (storedFeatures.empty()) continue;
 
             double similarityScore = compareFeatures(inputFeatures, storedFeatures);
-            if (similarityScore > 0.65) {
+            if (similarityScore > 0.70) {
 
                 if (user.getRole().equals(UserRole.PT) && !user.getTrainer().isLocked()) {
 

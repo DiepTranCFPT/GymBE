@@ -38,4 +38,9 @@ public class UserService implements UserDetailsService {
         return authenticationRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
     }
+
+    public User getUserByemail(String email) {
+        return authenticationRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+    }
 }

@@ -55,6 +55,8 @@ public class SecurityConfig {
             "/api/membership-plan/mb-plan/**",
             "/api/membership-plan/member/**",
             "/api/users/sendmail/**",
+            "/**/register-faceid/**",
+            "/api/users/face/**",
             "/ws/info"
     };
     private final String[] PUBLIC_ENDPOINTS_METHOD = {
@@ -63,7 +65,6 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/admin/register_PT",
             "/api/test/admin-api/**",
-            "/api/users/{{id}}/register-faceid/**",
             "/api/trainers/trainer-lock/**",
             "/api/trainers",
             "/api/membership-plan/add-plan/**",
@@ -95,7 +96,7 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).hasAnyRole( "ADMIN")
+                        .requestMatchers(PUBLIC_ENDPOINTS_METHOD).hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
