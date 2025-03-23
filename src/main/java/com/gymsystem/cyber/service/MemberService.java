@@ -34,8 +34,6 @@ public class MemberService implements iMember {
     AuthenticationRepository authenticationRepository;
 
 
-
-
     public MemberService(MemberRepository memberRepository, AccountUtils accountUtils,
                          MembershipPlansRepository membershipPlansRepository, PaymentRepository paymentRepository,
                          SubscriptonRepository subscriptionsRepository, ScheduleIORepository scheduleIORepository,
@@ -247,7 +245,7 @@ public class MemberService implements iMember {
 
     @Override
     @Transactional
-    public CompletableFuture<ResponseObject> BookingForAdmin(String email, MemberRegistrationRequest memberRegistrationRequest){
+    public CompletableFuture<ResponseObject> BookingForAdmin(String email, MemberRegistrationRequest memberRegistrationRequest) {
         User user = authenticationRepository.findAllByEmail(email);
 
         if (user == null) {
@@ -316,6 +314,34 @@ public class MemberService implements iMember {
                 .build());
 
     }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> AnalyseForAdmin() {
+        Map<String, AnlService> anlServices = new HashMap<>();
+
+        List<MemberShipPlans> memberShipPlans = membershipPlansRepository.findAll();
+        for (MemberShipPlans plans : memberShipPlans) {
+            List<Members> members = memberRepository.findAllBySubscriptions_MemberShipPlans_Id(plans.getId());
+            double total = members.stream().mapToDouble(Members::getPrice).sum();
+
+            AnlService service = AnlService.builder()
+                    .name(plans.getName())
+                    .id(plans.getId())
+                    .totalUser(members.size())
+                    .total(total)
+                    .build();
+
+            anlServices.put(plans.getName(), service);
+        }
+
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .data(anlServices)
+                .httpStatus(HttpStatus.OK)
+                .message("Success")
+                .build());
+    }
+
 
 
 }

@@ -23,4 +23,6 @@ public interface iMember {
 
     CompletableFuture<ResponseObject> BookingForAdmin(String idUser, MemberRegistrationRequest memberRegistrationRequest );
 
+    CompletableFuture<ResponseObject> AnalyseForAdmin();
+
 }

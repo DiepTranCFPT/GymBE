@@ -65,10 +65,17 @@ public class BookingController {
         return memberService.getMemberByUserId(id);
     }
 
-    @PostMapping("/booking/admin/{email}")
+    @PostMapping("/admin/{email}")
     @Operation(summary = "admin booking voi id cua user")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CompletableFuture<ResponseObject> adminBooking(@PathVariable("email") String email, @RequestBody MemberRegistrationRequest memberRegistrationRequest){
         return memberService.BookingForAdmin(email, memberRegistrationRequest);
+    }
+
+    @GetMapping("/analysis")
+    @Operation(summary = "lay thong tin thong ke cac dich vu da su dung")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public CompletableFuture<ResponseObject> analysis(){
+        return memberService.AnalyseForAdmin();
     }
 }
