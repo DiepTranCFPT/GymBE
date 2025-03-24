@@ -40,10 +40,17 @@ public class SchedulesIOControler {
 
 
     @GetMapping("/category/total/{date}")
-    @Operation(summary = "lay lich theo tung category (ADMIN) (2025-05-24)")
+    @Operation(summary = "lay lich theo tung category (thang) (ADMIN) (2025-05-24)")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CompletableFuture<ResponseObject> getTotalCategoryPt(@PathVariable("date") LocalDate localDate) {
         return iSchedulesIOService.getScheduleByDateTime(localDate);
+    }
+
+    @GetMapping("/category/total-day/{date}")
+    @Operation(summary = "lay lich theo tung category (ngay) (ADMIN) (2025-05-24)")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public CompletableFuture<ResponseObject> getTotalCategorywithDay(@PathVariable("date") LocalDate localDate) {
+        return iSchedulesIOService.getListCategoryWithDate(localDate);
     }
 
 }

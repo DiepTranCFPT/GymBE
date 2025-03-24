@@ -19,6 +19,7 @@ public interface ISchedulesIOService {
 
     CompletableFuture<ResponseObject> getListCategoryPtDate(String userid, LocalDate dateTime);
 
+    CompletableFuture<ResponseObject> getListCategoryWithDate(LocalDate dateTime);
 
 
 }

@@ -139,6 +139,7 @@ public class SchedulesIOService implements ISchedulesIOService {
                 .map(schedulesIO -> SchedulesIORepo.builder()
                         .dateTime(schedulesIO.getDate().toLocalDate())
                         .id(schedulesIO.getId())
+                        .UserEmail(schedulesIO.getMembers().getUser().getEmail())
                         .checkout(schedulesIO.getTimeCheckout() != null)
                         .checkin(schedulesIO.getTimeCheckin() != null)
                         .TrainerId(schedulesIO.getTrainer() != null ? schedulesIO.getTrainer().getId() : "")
@@ -147,6 +148,28 @@ public class SchedulesIOService implements ISchedulesIOService {
 
 
         return CompletableFuture.completedFuture(ResponseObject.builder()
+                .data(schedulesIORepos)
+                .httpStatus(HttpStatus.OK)
+                .message("Success")
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> getListCategoryWithDate(LocalDate dateTime) {
+        List<SchedulesIO> schedulesIOS = scheduleIORepository.findAllByTimeCheckinBetween(dateTime.atTime(6,0),dateTime.atTime(21,0));
+        List<SchedulesIORepo> schedulesIORepos = schedulesIOS.stream()
+                .map(schedulesIO -> SchedulesIORepo.builder()
+                        .dateTime(schedulesIO.getDate().toLocalDate())
+                        .id(schedulesIO.getId())
+                        .UserEmail(schedulesIO.getMembers().getUser().getEmail())
+                        .checkout(schedulesIO.getTimeCheckout() != null)
+                        .checkin(schedulesIO.getTimeCheckin() != null)
+                        .TrainerId(schedulesIO.getTrainer() != null ? schedulesIO.getTrainer().getUser().getEmail() : "")
+                        .build())
+                .collect(Collectors.toList());
+
+        return  CompletableFuture.completedFuture(ResponseObject.builder()
                 .data(schedulesIORepos)
                 .httpStatus(HttpStatus.OK)
                 .message("Success")

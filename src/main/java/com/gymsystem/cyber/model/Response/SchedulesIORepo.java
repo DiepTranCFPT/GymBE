@@ -6,5 +6,5 @@ import lombok.Builder;
 import java.time.LocalDate;
 
 @Builder
-public record SchedulesIORepo(String id, LocalDate dateTime, boolean checkin, boolean checkout, String TrainerId) {
+public record SchedulesIORepo(String id, LocalDate dateTime, boolean checkin, boolean checkout,String UserEmail, String TrainerId) {
 }
