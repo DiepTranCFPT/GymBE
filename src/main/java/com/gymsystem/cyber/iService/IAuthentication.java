@@ -32,4 +32,6 @@ public interface IAuthentication {
 
     ResponseObject changePassword(String email, String code, String newPassword);
 
+    CompletableFuture<ResponseObject> saveFcmToken(String idUser, String token);
+
 }

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,5 +27,7 @@ public class Notifications {
     private String status;
 
     private String createAt;
+
+    private LocalDateTime dateTime = LocalDateTime.now();
 
 }

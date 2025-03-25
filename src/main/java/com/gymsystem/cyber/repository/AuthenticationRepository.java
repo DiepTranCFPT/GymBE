@@ -42,4 +42,6 @@ public interface AuthenticationRepository extends JpaRepository<User, String> { 
 
 //    List<User> findAllByAvataIsNotNullAndMembers_ExpireDate_DayOfMonth
 
+
+
 }

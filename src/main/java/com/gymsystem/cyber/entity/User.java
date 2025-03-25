@@ -64,10 +64,13 @@ public class User extends BaseEntity {
     @Column(columnDefinition = "LONGBLOB")
     private byte[] avata;
 
-    @OneToOne(mappedBy = "user",fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     public Members members;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Trainer trainer;
+
+    private String FcmToken; /// luư địa chỉ gủi thong bóa -> firebase
+
 
 }

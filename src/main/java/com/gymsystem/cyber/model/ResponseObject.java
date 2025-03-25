@@ -1,15 +1,13 @@
 package com.gymsystem.cyber.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.http.HttpStatus;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 // khi tra ve fe tra vè duoi dạng ResponseObject
 public class ResponseObject {
     private String message;

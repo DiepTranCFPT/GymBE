@@ -37,7 +37,7 @@ public class AuthenticationController {
 
     @Autowired
     public AuthenticationController(IAuthentication authenticationService
-                                    ,IFaceRecodeService iFaceRecodeService
+            , IFaceRecodeService iFaceRecodeService
     ) {
         this.authenticationService = authenticationService;
         this.iFaceRecodeService = iFaceRecodeService;
@@ -117,6 +117,12 @@ public class AuthenticationController {
     @Operation(summary = "gui ma xac nhan va password ")
     public CompletableFuture<ResponseObject> sendMail(@PathVariable("email") String email, @PathVariable("code") String code, @RequestBody String newPassword) {
         return CompletableFuture.completedFuture(authenticationService.changePassword(email, code, newPassword));
+    }
+
+    @PostMapping("/save-fcm-token/{id}")
+    @Operation(summary = "luu Fcm token cua firebase -> gui thong bao")
+    public CompletableFuture<ResponseObject> saveFCMToken(@PathVariable("id") String idUser,@RequestBody String token) {
+        return authenticationService.saveFcmToken(idUser, token);
     }
 
 }

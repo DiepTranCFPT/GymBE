@@ -8,7 +8,6 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.exception.AuthException;
-import com.gymsystem.cyber.model.EmailDetail;
 import com.gymsystem.cyber.model.Request.LoginGoogleRequest;
 import com.gymsystem.cyber.model.Request.TypeEditUser;
 import com.gymsystem.cyber.model.Response.AccountResponse;
@@ -329,6 +328,21 @@ public class AuthenticationService implements IAuthentication {
                 .data(true)
                 .message("Thay đổi mật khẩu thành công!")
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> saveFcmToken(String idUser, String token) {
+        User user = authenticationRepository.findById(idUser)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+
+        user.setFcmToken(token);
+        authenticationRepository.saveAndFlush(user);
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .data(true)
+                .message("Save FCM token successfully!")
+                .build());
     }
 
     @Transactional

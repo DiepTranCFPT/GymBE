@@ -1,16 +1,17 @@
 package com.gymsystem.cyber.service;
 
 import com.gymsystem.cyber.entity.Members;
+import com.gymsystem.cyber.entity.Notifications;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import com.gymsystem.cyber.enums.UserRole;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
 import com.gymsystem.cyber.entity.User;
+import com.gymsystem.cyber.iService.INotify;
+import com.gymsystem.cyber.model.Request.Checkinout;
+import com.gymsystem.cyber.model.Request.TypeNotification;
 import com.gymsystem.cyber.model.Response.FaceReposi;
 import com.gymsystem.cyber.model.ResponseObject;
-import com.gymsystem.cyber.repository.AuthenticationRepository;
-import com.gymsystem.cyber.repository.MemberRepository;
-import com.gymsystem.cyber.repository.ScheduleIORepository;
-import com.gymsystem.cyber.repository.TrainerRepository;
+import com.gymsystem.cyber.repository.*;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.global.opencv_core;
@@ -51,13 +52,17 @@ public class FaceRecodeService implements IFaceRecodeService {
     private final MemberRepository memberRepository;
     private List<User> users;
     private final TrainerRepository trainerRepository;
+    private final INotify iNotify;
+    private final NotificationsRepository notificationsRepository;
 
     @Autowired
-    public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository, TrainerRepository trainerRepository) {
+    public FaceRecodeService(AuthenticationRepository authenticationRepository, ScheduleIORepository scheduleIORepository, MemberRepository memberRepository, TrainerRepository trainerRepository, INotify iNotify, NotificationsRepository repository) {
         this.authenticationRepository = authenticationRepository;
         this.scheduleIORepository = scheduleIORepository;
         this.memberRepository = memberRepository;
         this.trainerRepository = trainerRepository;
+        this.iNotify = iNotify;
+        this.notificationsRepository = repository;
 
         loadListUserIsAvata();
 
@@ -212,11 +217,16 @@ public class FaceRecodeService implements IFaceRecodeService {
 
                 if (user.getRole().equals(UserRole.PT) && !user.getTrainer().isLocked()) {
 
-
                     boolean stt = user.getTrainer().isStatus();
                     user.getTrainer().setStatus(!stt);
                     trainerRepository.saveAndFlush(user.getTrainer());
 
+                    iNotify.createNotification(TypeNotification.CHECKIN, null, null,
+                            Checkinout.builder()
+                                    .userId(user.getId())
+                                    .checkin(LocalDateTime.now())
+                                    .build(),
+                            null);
                 } else if (user.getRole().equals(UserRole.USER)) {
 
                     Optional<Members> members = memberRepository.findByUser_Id(user.getId());
@@ -249,12 +259,24 @@ public class FaceRecodeService implements IFaceRecodeService {
                                 schedule.setStatus(true);
                                 scheduleIORepository.save(schedule);
                                 validSchedule = true;
+                                iNotify.createNotification(TypeNotification.CHECKIN, null, null,
+                                        Checkinout.builder()
+                                                .checkin(LocalDateTime.now())
+                                                .userId(user.getId())
+                                                .build()
+                                        , null);
                                 break;
                             } else {
                                 schedule.setTimeCheckout(now);
                                 schedule.setStatus(false);
                                 scheduleIORepository.save(schedule);
                                 validSchedule = false;
+                                iNotify.createNotification(TypeNotification.CHECHOUT, null, null,
+                                        Checkinout.builder()
+                                                .checkout(LocalDateTime.now())
+                                                .userId(user.getId())
+                                                .build()
+                                        , null);
                             }
 
                         } else {

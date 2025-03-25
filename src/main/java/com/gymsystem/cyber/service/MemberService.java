@@ -1,10 +1,9 @@
 package com.gymsystem.cyber.service;
 
 import com.gymsystem.cyber.entity.*;
+import com.gymsystem.cyber.iService.INotify;
 import com.gymsystem.cyber.iService.iMember;
-import com.gymsystem.cyber.model.Request.MemberRegistrationRequest;
-import com.gymsystem.cyber.model.Request.PTforUserRequest;
-import com.gymsystem.cyber.model.Request.PTscheduleRequest;
+import com.gymsystem.cyber.model.Request.*;
 import com.gymsystem.cyber.model.Response.*;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.*;
@@ -30,6 +29,7 @@ public class MemberService implements iMember {
     private final SubscriptonRepository subscriptionsRepository;
     private final ScheduleIORepository scheduleIORepository;
     private final TrainerRepository trainerRepository;
+    private final INotify iNotify;
     @Autowired
     AuthenticationRepository authenticationRepository;
 
@@ -37,7 +37,7 @@ public class MemberService implements iMember {
     public MemberService(MemberRepository memberRepository, AccountUtils accountUtils,
                          MembershipPlansRepository membershipPlansRepository, PaymentRepository paymentRepository,
                          SubscriptonRepository subscriptionsRepository, ScheduleIORepository scheduleIORepository,
-                         TrainerRepository trainerRepository, UserService userService) {
+                         TrainerRepository trainerRepository, UserService userService, INotify iNotify) {
         this.memberRepository = memberRepository;
         this.accountUtils = accountUtils;
         this.membershipPlansRepository = membershipPlansRepository;
@@ -45,6 +45,7 @@ public class MemberService implements iMember {
         this.subscriptionsRepository = subscriptionsRepository;
         this.scheduleIORepository = scheduleIORepository;
         this.trainerRepository = trainerRepository;
+        this.iNotify = iNotify;
     }
 
     @Override
@@ -190,6 +191,14 @@ public class MemberService implements iMember {
         if (!trainer.isLocked() && !hasUnfinishedSession) {
             schedulesIO.setTrainer(trainer);
             trainer.setStatus(true);
+
+            //
+            iNotify.createNotification(TypeNotification.BOOKING_PT,BookingPtType.builder()
+                            .emailPt(trainer.getUser().getEmail())
+                            .date(schedulesIO.getDate().toLocalDate())
+                            .emailUser(schedulesIO.getMembers().getUser().getEmail())
+                    .build(), null,null,null);
+            //
             scheduleIORepository.save(schedulesIO);
             return ResponseObject.builder().message("Success").httpStatus(HttpStatus.OK).build();
         } else {
@@ -307,6 +316,23 @@ public class MemberService implements iMember {
                 .start(LocalDate.now())
                 .end(LocalDate.now().plusMonths(memberRegistrationRequest.getDuration()))
                 .build();
+
+        // tao thong bao
+        iNotify.createNotification(TypeNotification.BOOKING_SERVICE, null,
+                BookingServiceType.builder()
+                        .userId(user.getId())
+                        .serviceBooking(
+                                ServiceBooking.builder()
+                                        .sl(memberRegistrationRequest.getDuration())
+                                        .dateTime(LocalDateTime.now().toLocalTime())
+                                        .name(memberShipPlans.getName())
+                                        .total(members.getPrice())
+                                        .build()
+                        ).dt(" ")
+                        .build(), null, null);
+
+        // toa thong bao
+
         return CompletableFuture.completedFuture(ResponseObject.builder()
                 .httpStatus(HttpStatus.OK)
                 .message("Booking success!")
@@ -341,7 +367,6 @@ public class MemberService implements iMember {
                 .message("Success")
                 .build());
     }
-
 
 
 }
