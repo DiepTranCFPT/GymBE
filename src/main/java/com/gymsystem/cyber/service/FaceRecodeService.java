@@ -213,97 +213,84 @@ public class FaceRecodeService implements IFaceRecodeService {
             if (storedFeatures.empty()) continue;
 
             double similarityScore = compareFeatures(inputFeatures, storedFeatures);
-            if (similarityScore > 0.70) {
-
-                if (user.getRole().equals(UserRole.PT) && !user.getTrainer().isLocked()) {
-
-                    boolean stt = user.getTrainer().isStatus();
-                    user.getTrainer().setStatus(!stt);
-                    trainerRepository.saveAndFlush(user.getTrainer());
-
-                    iNotify.createNotification(TypeNotification.CHECKIN, null, null,
-                            Checkinout.builder()
-                                    .userId(user.getId())
-                                    .checkin(LocalDateTime.now())
-                                    .build(),
-                            null);
-                } else if (user.getRole().equals(UserRole.USER)) {
-
-                    Optional<Members> members = memberRepository.findByUser_Id(user.getId());
-                    if (!members.isPresent()) {
-                        return CompletableFuture.completedFuture(
-                                new ResponseObject("Tài khoản chưa đăng ký thành viên", HttpStatus.OK, ""));
-                    }
-
-                    Members member = members.get();
-                    if (member.isExprire() || (member.getExpireDate() != null && member.getExpireDate().isBefore(now))) {
-                        return CompletableFuture.completedFuture(
-                                new ResponseObject("Checkin thất bại! Gói Membership đã hết hạn.", HttpStatus.BAD_REQUEST, null));
-                    }
-
-                    List<SchedulesIO> schedules = scheduleIORepository.findAllByMembers_Id(member.getId());
-
-                    for (SchedulesIO schedule : schedules) {
-                        // Chỉ xét lịch có ngày trùng với hôm nay
-                        if (!schedule.getDate().toLocalDate().isEqual(now.toLocalDate())) {
-                            continue;
-                        }
-
-                        LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);  // Giờ bắt đầu ( 6 )
-                        LocalDateTime endTime = startTime.plusHours(schedule.getTime());  // Giờ kết thúc
-
-                        // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
-                        if (!now.isBefore(startTime) && now.isBefore(endTime)) {
-                            if (schedule.getTimeCheckin() == null) {
-                                schedule.setTimeCheckin(now);
-                                schedule.setStatus(true);
-                                scheduleIORepository.save(schedule);
-                                validSchedule = true;
-                                iNotify.createNotification(TypeNotification.CHECKIN, null, null,
-                                        Checkinout.builder()
-                                                .checkin(LocalDateTime.now())
-                                                .userId(user.getId())
-                                                .build()
-                                        , null);
-                                break;
-                            } else {
-                                schedule.setTimeCheckout(now);
-                                schedule.setStatus(false);
-                                scheduleIORepository.save(schedule);
-                                validSchedule = false;
-                                iNotify.createNotification(TypeNotification.CHECHOUT, null, null,
-                                        Checkinout.builder()
-                                                .checkout(LocalDateTime.now())
-                                                .userId(user.getId())
-                                                .build()
-                                        , null);
-                            }
-
-                        } else {
-                            String errorMessage = String.format("Checkin thất bại! Gói dịch vụ: %s chỉ được checkin từ %s đến %s.",
-                                    member.getName(),
-                                    startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                                    endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
-
-                            return CompletableFuture.completedFuture(
-                                    new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
-                        }
-                    }
+            if (similarityScore > 0.30) {
 
 
-                    if (!validSchedule) {
-                        return CompletableFuture.completedFuture(
-                                new ResponseObject("Không nằm trong thời gian tập luyện!", HttpStatus.BAD_REQUEST, null));
-                    }
-
-                    FaceReposi faceReposi = FaceReposi.builder()
-                            .name(user.getId())
-                            .goiTap(member.getName())
-                            .build();
-
+                Optional<Members> members = memberRepository.findByUser_Id(user.getId());
+                if (!members.isPresent()) {
                     return CompletableFuture.completedFuture(
-                            new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
+                            new ResponseObject("Tài khoản chưa đăng ký thành viên", HttpStatus.OK, ""));
                 }
+
+                Members member = members.get();
+                if (member.isExprire() || (member.getExpireDate() != null && member.getExpireDate().isBefore(now))) {
+                    return CompletableFuture.completedFuture(
+                            new ResponseObject("Checkin thất bại! Gói Membership đã hết hạn.", HttpStatus.BAD_REQUEST, null));
+                }
+
+                List<SchedulesIO> schedules = scheduleIORepository.findAllByMembers_Id(member.getId());
+
+                for (SchedulesIO schedule : schedules) {
+                    // Chỉ xét lịch có ngày trùng với hôm nay
+                    if (!schedule.getDate().toLocalDate().isEqual(now.toLocalDate())) {
+                        continue;
+                    }
+
+                    LocalDateTime startTime = schedule.getDate().toLocalDate().atTime(6, 0);  // Giờ bắt đầu ( 6 )
+                    LocalDateTime endTime = startTime.plusHours(schedule.getTime());  // Giờ kết thúc
+
+                    // Kiểm tra xem thời gian hiện tại có nằm trong khoảng hợp lệ không
+                    if (!now.isBefore(startTime) && now.isBefore(endTime)) {
+                        if (schedule.getTimeCheckin() == null) {
+                            schedule.setTimeCheckin(now);
+                            schedule.setStatus(true);
+                            scheduleIORepository.save(schedule);
+                            validSchedule = true;
+                            iNotify.createNotification(TypeNotification.CHECKIN, null, null,
+                                    Checkinout.builder()
+                                            .checkin(LocalDateTime.now())
+                                            .userId(user.getId())
+                                            .build()
+                                    , null);
+                            break;
+                        } else {
+                            schedule.setTimeCheckout(now);
+                            schedule.setStatus(false);
+                            scheduleIORepository.save(schedule);
+                            validSchedule = false;
+                            iNotify.createNotification(TypeNotification.CHECHOUT, null, null,
+                                    Checkinout.builder()
+                                            .checkout(LocalDateTime.now())
+                                            .userId(user.getId())
+                                            .build()
+                                    , null);
+                        }
+
+                    } else {
+                        String errorMessage = String.format("Checkin thất bại! Gói dịch vụ: %s chỉ được checkin từ %s đến %s.",
+                                member.getName(),
+                                startTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                                endTime.format(DateTimeFormatter.ofPattern("HH:mm")));
+
+                        return CompletableFuture.completedFuture(
+                                new ResponseObject(errorMessage, HttpStatus.BAD_REQUEST, null));
+                    }
+                }
+
+
+                if (!validSchedule) {
+                    return CompletableFuture.completedFuture(
+                            new ResponseObject("Không nằm trong thời gian tập luyện!", HttpStatus.BAD_REQUEST, null));
+                }
+
+                FaceReposi faceReposi = FaceReposi.builder()
+                        .name(user.getId())
+                        .goiTap(member.getName())
+                        .build();
+
+                return CompletableFuture.completedFuture(
+                        new ResponseObject("Checkin thành công!", HttpStatus.OK, faceReposi));
+
             }
         }
 

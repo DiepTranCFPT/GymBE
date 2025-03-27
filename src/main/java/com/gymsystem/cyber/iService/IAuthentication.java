@@ -34,4 +34,6 @@ public interface IAuthentication {
 
     CompletableFuture<ResponseObject> saveFcmToken(String idUser, String token);
 
+    CompletableFuture<ResponseObject> remoteFcmToken(String idUser);
+
 }

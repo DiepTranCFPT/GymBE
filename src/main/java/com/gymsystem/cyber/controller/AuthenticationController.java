@@ -3,6 +3,7 @@ package com.gymsystem.cyber.controller;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.gymsystem.cyber.iService.IAuthentication;
 import com.gymsystem.cyber.iService.IFaceRecodeService;
+import com.gymsystem.cyber.model.Request.FcmToken;
 import com.gymsystem.cyber.model.Request.RegisterRequest;
 import com.gymsystem.cyber.model.Request.TypeEditUser;
 import com.gymsystem.cyber.model.Response.UserRespone;
@@ -119,10 +120,16 @@ public class AuthenticationController {
         return CompletableFuture.completedFuture(authenticationService.changePassword(email, code, newPassword));
     }
 
-    @PostMapping("/save-fcm-token/{id}")
-    @Operation(summary = "luu Fcm token cua firebase -> gui thong bao")
-    public CompletableFuture<ResponseObject> saveFCMToken(@PathVariable("id") String idUser,@RequestBody String token) {
-        return authenticationService.saveFcmToken(idUser, token);
+        @PostMapping("/save-fcm-token/{id}")
+        @Operation(summary = "luu Fcm token cua firebase -> gui thong bao")
+        public CompletableFuture<ResponseObject> saveFCMToken(@PathVariable("id") String idUser, @RequestBody FcmToken token) {
+            return authenticationService.saveFcmToken(idUser, token.getToken());
+        }
+
+    @DeleteMapping("/remove-fcm-token/{id}")
+    @Operation(summary = "xoa Fcm token cua firebase -> huy thong bao")
+    public CompletableFuture<ResponseObject> removeFCMToken(@PathVariable("id") String idUser) {
+        return authenticationService.remoteFcmToken(idUser);
     }
 
 }

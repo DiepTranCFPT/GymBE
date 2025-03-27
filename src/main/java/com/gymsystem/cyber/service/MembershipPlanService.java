@@ -3,7 +3,9 @@ package com.gymsystem.cyber.service;
 import com.gymsystem.cyber.entity.MemberShipPlans;
 import com.gymsystem.cyber.entity.SchedulesIO;
 import com.gymsystem.cyber.iService.IMemberShipPlans;
+import com.gymsystem.cyber.iService.INotify;
 import com.gymsystem.cyber.model.Request.PlansRequest;
+import com.gymsystem.cyber.model.Request.TypeNotification;
 import com.gymsystem.cyber.model.Response.GetUserCategory;
 import com.gymsystem.cyber.model.ResponseObject;
 import com.gymsystem.cyber.repository.MembershipPlansRepository;
@@ -24,10 +26,12 @@ public class MembershipPlanService implements IMemberShipPlans {
 
     private final MembershipPlansRepository membershipPlansRepository;
     private final ScheduleIORepository scheduleIORepository;
+    private final INotify iNotify;
 
-    public MembershipPlanService(MembershipPlansRepository membershipPlansRepository, ScheduleIORepository scheduleIORepository) {
+    public MembershipPlanService(MembershipPlansRepository membershipPlansRepository, ScheduleIORepository scheduleIORepository, INotify iNotify) {
         this.membershipPlansRepository = membershipPlansRepository;
         this.scheduleIORepository = scheduleIORepository;
+        this.iNotify = iNotify;
     }
 
     @Override
@@ -66,15 +70,7 @@ public class MembershipPlanService implements IMemberShipPlans {
             return CompletableFuture.completedFuture(new ResponseObject("Fail", HttpStatus.BAD_REQUEST, "Membership Plan is not exist"));
         }
         // DIEP K map ve DTO no se sap db do :((
-        return CompletableFuture.completedFuture(new ResponseObject("Success", HttpStatus.OK,
-                PlansRequest.builder()
-                        .id(memberShipPlans.getId())
-                        .startedDate(memberShipPlans.getEndDate().toLocalDate())
-                        .description(memberShipPlans.getDescription())
-                        .price(memberShipPlans.getPrice())
-                        .endDate(memberShipPlans.getStartDate().toLocalDate())
-                        .TimeInDay(memberShipPlans.getTimeInDay())
-                        .build()));
+        return CompletableFuture.completedFuture(new ResponseObject("Success", HttpStatus.OK, PlansRequest.builder().id(memberShipPlans.getId()).startedDate(memberShipPlans.getEndDate().toLocalDate()).description(memberShipPlans.getDescription()).price(memberShipPlans.getPrice()).endDate(memberShipPlans.getStartDate().toLocalDate()).TimeInDay(memberShipPlans.getTimeInDay()).build()));
     }
 
     @Override
@@ -85,15 +81,11 @@ public class MembershipPlanService implements IMemberShipPlans {
 //        }
         // chung name nhuwng khac gia tien => 2 service khac nhau.
 
-        MemberShipPlans memberShipPlans = MemberShipPlans.builder()
-                .name(plansRequest.getName())
-                .price(plansRequest.getPrice())
-                .description(plansRequest.getDescription())
-                .startDate(plansRequest.getStartedDate().atTime(6, 0))
-                .endDate(plansRequest.getEndDate().atTime(21, 0))
-                .TimeInDay(plansRequest.getTimeInDay())
-                .isActive(true).build();
+        MemberShipPlans memberShipPlans = MemberShipPlans.builder().name(plansRequest.getName()).price(plansRequest.getPrice()).description(plansRequest.getDescription()).startDate(plansRequest.getStartedDate().atTime(6, 0)).endDate(plansRequest.getEndDate().atTime(21, 0)).TimeInDay(plansRequest.getTimeInDay()).isActive(true).build();
         membershipPlansRepository.save(memberShipPlans);
+
+        iNotify.createNotification(TypeNotification.AMIN, null, null, null, "Tham gia GymSystem với: " + plansRequest.getName() + "\n" + "với gia: " + plansRequest.getPrice() + "\n" + "từ ngày: " + plansRequest.getStartedDate());
+
         return CompletableFuture.completedFuture(new ResponseObject("Success", HttpStatus.OK, memberShipPlans));
     }
 
@@ -137,24 +129,12 @@ public class MembershipPlanService implements IMemberShipPlans {
 
         List<SchedulesIO> schedulesIOS = scheduleIORepository.findAllByDateBetween(startOfDay, endOfDay);
 
-        List<GetUserCategory> getUserCategories = schedulesIOS.stream()
-                .filter(schedulesIO -> schedulesIO.getTimeCheckin() != null) // Chỉ giữ lại bản ghi có giá trị
-                .map(schedulesIO -> GetUserCategory.builder()
-                        .idPt(schedulesIO.getTrainer() != null ? schedulesIO.getTrainer().getId() : "")
-                        .checkin(schedulesIO.getTimeCheckin().toLocalTime()) // Không còn lo bị null
-                        .checkout(schedulesIO.getTimeCheckout() != null ? schedulesIO.getTimeCheckout().toLocalTime() : null)
-                        .id(schedulesIO.getMembers() != null && schedulesIO.getMembers().getUser() != null
-                                ? schedulesIO.getMembers().getUser().getId()
-                                : "")
-                        .build())
-                .toList();
+        List<GetUserCategory> getUserCategories = schedulesIOS.stream().filter(schedulesIO -> schedulesIO.getTimeCheckin() != null) // Chỉ giữ lại bản ghi có giá trị
+                .map(schedulesIO -> GetUserCategory.builder().idPt(schedulesIO.getTrainer() != null ? schedulesIO.getTrainer().getId() : "").checkin(schedulesIO.getTimeCheckin().toLocalTime()) // Không còn lo bị null
+                        .checkout(schedulesIO.getTimeCheckout() != null ? schedulesIO.getTimeCheckout().toLocalTime() : null).id(schedulesIO.getMembers() != null && schedulesIO.getMembers().getUser() != null ? schedulesIO.getMembers().getUser().getId() : "").build()).toList();
 
 
-        return CompletableFuture.completedFuture(ResponseObject.builder()
-                .httpStatus(HttpStatus.OK)
-                .message("Success")
-                .data(getUserCategories)
-                .build());
+        return CompletableFuture.completedFuture(ResponseObject.builder().httpStatus(HttpStatus.OK).message("Success").data(getUserCategories).build());
     }
 
 

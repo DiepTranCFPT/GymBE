@@ -1,8 +1,10 @@
 package com.gymsystem.cyber.config;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.ClassPathResource;
@@ -18,14 +20,24 @@ public class FirebaseInitializer {
     private final String firebaseCredentials = "./FirebaseSetting.json";
 
     @Bean
-    public FirebaseAuth firebaseAuth() throws IOException {
+    public FirebaseApp firebaseApp() throws IOException {
         if (FirebaseApp.getApps().isEmpty()) {
             InputStream serviceAccount = new ClassPathResource(firebaseCredentials).getInputStream();
             FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(com.google.auth.oauth2.GoogleCredentials.fromStream(serviceAccount))
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
-            FirebaseApp.initializeApp(options);
+            return FirebaseApp.initializeApp(options);
         }
-        return FirebaseAuth.getInstance();
+        return FirebaseApp.getInstance();
+    }
+
+    @Bean
+    public FirebaseMessaging firebaseMessaging(FirebaseApp firebaseApp) {
+        return FirebaseMessaging.getInstance(firebaseApp);
+    }
+
+    @Bean
+    public FirebaseAuth firebaseAuth(FirebaseApp firebaseApp) {
+        return FirebaseAuth.getInstance(firebaseApp);
     }
 }

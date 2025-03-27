@@ -15,10 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.auth.login.AccountNotFoundException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -27,40 +26,57 @@ public class NotificationService implements INotify {
 
     private final NotificationsRepository notificationsRepository;
     private final AuthenticationRepository authenticationRepository;
+    private final FirebaseMessaging firebaseMessaging;
 
-    public NotificationService(NotificationsRepository notificationsRepository, AuthenticationRepository authenticationRepository) {
+    public NotificationService(NotificationsRepository notificationsRepository, AuthenticationRepository authenticationRepository, FirebaseMessaging firebaseMessaging) {
         this.notificationsRepository = notificationsRepository;
         this.authenticationRepository = authenticationRepository;
+        this.firebaseMessaging = firebaseMessaging;
     }
 
     @Override
+    @Transactional
     public void saveNotifacation(NotificationRequest notificationRequest) {
 
         Notifications notifications = Notifications.builder()
                 .user(notificationRequest.getUser())
                 .status(notificationRequest.getStatus())
                 .createAt(notificationRequest.getCreateAt())
+                .dateTime(LocalDateTime.now())
                 .build();
         notificationsRepository.save(notifications);
     }
 
     @Override
     public void sendNotification(String token, String Title, String content) {
+//        try {
+//            Message message = Message.builder()
+//                    .setToken(token)
+//                    .setNotification(Notification.builder()
+//                            .setTitle(Title)
+//                            .setBody(content)
+//                            .build())
+//                    .build();
+//
+//            FirebaseMessaging.getInstance().send(message);
+//        } catch (FirebaseMessagingException e) {
+//            throw new RuntimeException(e);
+//        }
         try {
-            Message message = Message.builder()
-                    .setToken(token)
-                    .setNotification(Notification.builder()
-                            .setTitle(Title)
-                            .setBody(content)
-                            .build())
+            Notification notification = Notification.builder()
+                    .setTitle(Title)
+                    .setBody(content)
                     .build();
 
-            FirebaseMessaging.getInstance().send(message);
+            Message message = Message.builder()
+                    .setToken(token)
+                    .setNotification(notification)
+                    .build();
+
+            firebaseMessaging.send(message);
         } catch (FirebaseMessagingException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     @Override
@@ -99,7 +115,7 @@ public class NotificationService implements INotify {
         switch (typeNotifitation) {
             case AMIN -> {
                 List<User> users = authenticationRepository.findAll()
-                        .stream().filter(user -> user.isDeleted())
+                        .stream().filter(user -> !user.isDeleted())
                         .collect(Collectors.toList());
                 List<Notifications> notifications = new ArrayList<>();
                 users.forEach(user -> {
@@ -107,10 +123,14 @@ public class NotificationService implements INotify {
                             .createAt(content)
                             .user(user)
                             .status(TypeNotification.AMIN.name())
+                            .dateTime(LocalDateTime.now())
                             .build());
-                    sendNotification(user.getFcmToken(), TypeNotification.AMIN.name(), content);
+                    if (user.getFcmToken() != null && !user.getFcmToken().isEmpty()) {
+                        sendNotification(user.getFcmToken(), TypeNotification.AMIN.name(), content);
+                    }
                 });
                 notificationsRepository.saveAllAndFlush(notifications);
+
                 responseObject.setData(content);
                 return CompletableFuture.completedFuture(responseObject);
             }
@@ -134,9 +154,10 @@ public class NotificationService implements INotify {
                         .status(TypeNotification.CHECKIN.name())
                         .createAt(contentAdmin)
                         .build());
-
-                sendNotification(user.getFcmToken(), TypeNotification.CHECKIN.name(), contents);
-                sendNotification(admin.getFcmToken(), TypeNotification.CHECKIN.name(), contentAdmin);
+                if (user.getFcmToken() != null)
+                    sendNotification(user.getFcmToken(), TypeNotification.CHECKIN.name(), contents);
+                if (admin.getFcmToken() != null)
+                    sendNotification(admin.getFcmToken(), TypeNotification.CHECKIN.name(), contentAdmin);
                 responseObject.setData(contents);
                 return CompletableFuture.completedFuture(responseObject);
             }
@@ -160,9 +181,10 @@ public class NotificationService implements INotify {
                         .status(TypeNotification.CHECKIN.name())
                         .createAt(contentAdmin)
                         .build());
-
-                sendNotification(user.getFcmToken(), TypeNotification.CHECHOUT.name(), contents);
-                sendNotification(admin.getFcmToken(), TypeNotification.CHECHOUT.name(), contentAdmin);
+                if (user.getFcmToken() != null)
+                    sendNotification(user.getFcmToken(), TypeNotification.CHECHOUT.name(), contents);
+                if (admin.getFcmToken() != null)
+                    sendNotification(admin.getFcmToken(), TypeNotification.CHECHOUT.name(), contentAdmin);
                 responseObject.setData(contents);
                 return CompletableFuture.completedFuture(responseObject);
             }
@@ -186,8 +208,10 @@ public class NotificationService implements INotify {
                         .status(TypeNotification.BOOKING_SERVICE.name())
                         .createAt(contents)
                         .build());
-                sendNotification(user.getFcmToken(), TypeNotification.BOOKING_SERVICE.name(), contents);
-                sendNotification(admin.getFcmToken(), TypeNotification.BOOKING_SERVICE.name(), contents);
+                if (user.getFcmToken() != null)
+                    sendNotification(user.getFcmToken(), TypeNotification.BOOKING_SERVICE.name(), contents);
+                if (admin.getFcmToken() != null)
+                    sendNotification(admin.getFcmToken(), TypeNotification.BOOKING_SERVICE.name(), contents);
                 responseObject.setData(contents);
                 return CompletableFuture.completedFuture(responseObject);
             }
@@ -208,8 +232,10 @@ public class NotificationService implements INotify {
                         .status(TypeNotification.BOOKING_PT.name())
                         .createAt(contenPt)
                         .build());
-                sendNotification(user.getFcmToken(), TypeNotification.BOOKING_PT.name(), contenUser);
-                sendNotification(pt.getFcmToken(), TypeNotification.BOOKING_PT.name(), contenPt);
+                if (user.getFcmToken() != null)
+                    sendNotification(user.getFcmToken(), TypeNotification.BOOKING_PT.name(), contenUser);
+                if (pt.getFcmToken() != null)
+                    sendNotification(pt.getFcmToken(), TypeNotification.BOOKING_PT.name(), contenPt);
 
                 responseObject.setData(contenUser + " , " + contenPt);
                 return CompletableFuture.completedFuture(responseObject);
@@ -220,6 +246,4 @@ public class NotificationService implements INotify {
             }
         }
     }
-
-
 }

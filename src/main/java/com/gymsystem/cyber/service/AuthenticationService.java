@@ -218,15 +218,16 @@ public class AuthenticationService implements IAuthentication {
             if (user.getMembers() != null)
                 planName = user.getMembers().getSubscriptions().getMemberShipPlans().getName();
 
-            accountResponses.add(UserRespone.builder()
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .role(user.getRole())
-                    .phone(user.getPhone())
-                    .id(user.getId())
-                    .enable(user.isEnable())
-                    .plan(planName)
-                    .build());
+            if (!user.getRole().equals(UserRole.ADMIN))
+                accountResponses.add(UserRespone.builder()
+                        .email(user.getEmail())
+                        .name(user.getName())
+                        .role(user.getRole())
+                        .phone(user.getPhone())
+                        .id(user.getId())
+                        .enable(user.isEnable())
+                        .plan(planName)
+                        .build());
         }
 
         return CompletableFuture.supplyAsync(() -> ResponseObject.builder()
@@ -337,6 +338,20 @@ public class AuthenticationService implements IAuthentication {
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
 
         user.setFcmToken(token);
+        authenticationRepository.saveAndFlush(user);
+        return CompletableFuture.completedFuture(ResponseObject.builder()
+                .httpStatus(HttpStatus.OK)
+                .data(true)
+                .message("Save FCM token successfully!")
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public CompletableFuture<ResponseObject> remoteFcmToken(String idUser) {
+        User user = authenticationRepository.findById(idUser)
+                .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại!"));
+        user.setFcmToken(null);
         authenticationRepository.saveAndFlush(user);
         return CompletableFuture.completedFuture(ResponseObject.builder()
                 .httpStatus(HttpStatus.OK)
