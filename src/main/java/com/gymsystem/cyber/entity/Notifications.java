@@ -30,4 +30,13 @@ public class Notifications {
 
     private LocalDateTime dateTime = LocalDateTime.now();
 
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createAt == null) {
+            this.createAt = "System";
+        }
+    }
+
+
 }
